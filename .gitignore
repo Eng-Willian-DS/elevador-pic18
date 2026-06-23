@@ -10,5 +10,6 @@
 *.d
 
 # Python
+gera_ppt.py
 __pycache__/
 *.pyc
