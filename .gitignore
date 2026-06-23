@@ -1,0 +1,14 @@
+# MPLAB / C18 — arquivos gerados na compilação
+*.o
+*.hex
+*.cod
+*.err
+*.lst
+*.map
+*.sym
+*.mcs
+*.d
+
+# Python
+__pycache__/
+*.pyc
