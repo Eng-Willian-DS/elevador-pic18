@@ -1,7 +1,32 @@
 # Elevador PIC18F4550
 
-Central de controle para elevador de 6 andares desenvolvida em C para PIC18F4550.
-Projeto da disciplina ELE1012 — Microcontroladores · UTFPR Medianeira · 2026/1
+---
+
+## Disciplina
+
+| Campo | Detalhe |
+|-------|---------|
+| Disciplina | ELE1012 — Microprocessadores e Sistemas Microcontrolados |
+| Professor | Alberto Noboru Miyadaira |
+| Instituicao | UTFPR — Universidade Tecnologica Federal do Parana, Campus Medianeira |
+| Periodo | 2026/1 |
+| AP2 | 01/07/2026 |
+| Apresentacao | 02/07/2026 |
+
+---
+
+## Objetivo do projeto
+
+Desenvolver uma central de controle para elevador de 6 andares utilizando o microcontrolador PIC18F4550, atendendo aos seguintes requisitos definidos pelo professor:
+
+1. **6 andares** com botao de chamada individual conectado ao PORTB (RB0-RB5), ativo em nivel baixo com pull-up interno
+2. **Display LCD 2x16** exibindo em tempo real: andar atual, sentido de deslocamento (setas animadas na CGRAM) e temperatura medida
+3. **Controle de temperatura** via potenciometro no pino RA0/AN0 — se ultrapassar 31 graus C, o elevador para imediatamente (estado STOP)
+4. **Retorno automatico** ao 3o andar apos 2,3 segundos sem nenhuma chamada
+5. **Ciclo de porta** ao chegar no andar solicitado: abre, permanece aberta por 1 segundo e fecha
+6. **Sinal PWM** de aproximadamente 7 kHz com ciclo ativo de 38% para controle do motor via L293D
+
+Toda a simulacao foi desenvolvida e validada no PICSimLab com MPLAB IDE v8.92 e compilador C18 v3.47.
 
 ---
 
