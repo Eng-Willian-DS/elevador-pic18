@@ -19,6 +19,9 @@
 - TEMPO_PORTA=3000ms (1s abrindo + 1s aberta + 1s fechando; enunciado diz 1s)
 - Pinagem conforme script: motor RD0/RD1, LED porta RD2, LCD RD4-RD7, ADC RA0
 - Apresentação: 02/07/2026 · AP2: 01/07/2026
+- **GitHub:** `github.com/Eng-Willian-DS/elevador-pic18` (público) — elevador.c + PPT + script + docs/STATE + docs/FIXES + README detalhado
+- `gera_ppt.py` no .gitignore — existe localmente, não aparece no repo
+- Git local: `D:\Projetos\UTFPR\microcontroladores\elevador\` (branch master → remote main)
 
 ### Materiais de aula
 - Todos os 12 materiais de aula transcritos para markdown

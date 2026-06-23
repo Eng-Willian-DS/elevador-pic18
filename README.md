@@ -62,7 +62,6 @@ elevador-pic18/
 ├── elevador.c              # Codigo principal PIC18F4550
 ├── Central_Elevador.pptx   # Apresentacao — 16 slides
 ├── script_apresentacao.md  # Script de fala completo (~27 min)
-├── gera_ppt.py             # Script Python que gerou o PPT (python-pptx)
 ├── docs/
 │   ├── STATE.md            # Estado atual do projeto + calendario
 │   └── FIXES.md            # Historico completo de bugs corrigidos (14 fixes)
