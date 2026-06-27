@@ -1,6 +1,6 @@
 # STATE.md — Microcontroladores ELE1012
 
-**Atualizado:** 2026-06-22 (sessão 3 — PICSimLab funcional)
+**Atualizado:** 2026-06-26 (sessão 9 — AP2 substituída pelo trabalho; arquivos de apoio adicionados)
 
 ---
 
@@ -8,17 +8,23 @@
 
 ### Trabalho Elevador — `microcontroladores/elevador/elevador.c`
 - **BUILD SUCCEEDED** — `noboro.hex` pronto em `OneDrive/Documentos/Micro-controladores/`
-- LCD funcional no PICSimLab: `Andar: 3 ↑` / `Subindo....` / `Abrindo porta` / `Chamado: A2`
+- **FIX-017:** LCD throttle 100ms — elimina piscar preto causado por `lcd_posicao()` em loop livre
+- **FIX-018:** Linha 1 exibe `"PARADO"` no estado IDLE (era 6 espaços em branco)
+- **FIX-019:** `direcao = PARADO` ao chegar no destino — seta sumia apenas ao entrar no IDLE; agora some imediatamente ao parar (e fix do retorno ao 3° andar sempre mostrando ↑)
+- **FIX-020:** `TEMPO_PORTA` 3000→4000ms, 4 fases de 1s: "Abrindo porta" / "Porta aberta!" / "Fechando porta" / "Porta fechada"; LED apaga em 2000ms (início do fechamento)
+- **FIX-021:** Botão no andar atual + estado IDLE → abre porta diretamente (antes era ignorado)
+- LCD funcional no PICSimLab: `Andar: 3  PARADO` / `Andar: 3 ↑` / `Subindo....` / `Abrindo porta` / `Porta aberta!` / `Fechando porta` / `Porta fechada` / `Chamado: A2`
 - Setas ↑↓ animadas (4 chars CGRAM, alternância a cada 350ms)
 - Botões: RB0=A1, RB1=A2, ..., RB5=A6 — clicar nos botões B0–B5 do bloco LED2/PORTB no PICSimLab
 - Temperatura: trimpot ANAL0 em RA0/AN0 — **habilitar DIP switch AN0 (posição 9, superior)** no PICSimLab
-- Trimpot: ANAL0 (ao lado do LCD) -- usar scroll do mouse para variar; rolar cima = mais quente, baixo = mais frio
+- Trimpot: ANAL0 = **um dos 2 círculos brancos no CENTRO da placa** (NÃO o azul ao lado do LCD — esse é contraste do LCD, sem ligação ao PIC)
 - Comentarios do .c convertidos de UTF-8 para Windows-1252 (ANSI) -- legivel no MPLAB v8.92
 - Bug ADC corrigido: ADCON0=0x05 lia AN0 no PIC18F452 (nao AN1); revertido para ADCON0=0x01 (AN0, compativel ambos)
+- **ADC PICSimLab fix (2026-06-25):** `init_adc()` simplificado para `ADCON1 = 0x8E` (ADFM=1 em bit7 + PCFG=1110); `ler_adc()` usa `ADCON0 |= 0x04` (GO=bit2) + `Delay10KTCYx(1)` — elimina resultado left-justified e timeout falso
 - DIP corretos: superior pos.9 (AN0) ON; inferior pos.1 (LCD) ON; resto OFF
 - TEMPO_PORTA=3000ms (1s abrindo + 1s aberta + 1s fechando; enunciado diz 1s)
 - Pinagem conforme script: motor RD0/RD1, LED porta RD2, LCD RD4-RD7, ADC RA0
-- Apresentação: 02/07/2026 · AP2: 01/07/2026
+- **Apresentação: 02/07/2026** — AP2 foi substituída pelo trabalho do elevador (sem prova escrita)
 - **GitHub:** `github.com/Eng-Willian-DS/elevador-pic18` (público) — elevador.c + PPT + script + docs/STATE + docs/FIXES + README detalhado
 - `gera_ppt.py` no .gitignore — existe localmente, não aparece no repo
 - Git local: `D:\Projetos\UTFPR\microcontroladores\elevador\` (branch master → remote main)
@@ -89,11 +95,12 @@
 | 10/06/2026 | Aula: Propostas de projetos | — |
 | 11/06/2026 | Aula: CCP PWM | — |
 | 17–18/06/2026 | Aula: CCP Compare | — |
-| 01/07/2026 | **Avaliação 02 (AP2)** | — |
-| 02/07/2026 | Apresentação de projetos | — |
+| ~~01/07/2026~~ | ~~Avaliação 02 (AP2)~~ | Substituída pelo trabalho do elevador |
+| 02/07/2026 | **Apresentação do elevador** | Próxima entrega ⚠️ |
 | 08/07/2026 | Substitutiva | — |
 
 ## Próximo passo
 
-- Entregar Atividades 05, 06 e 07 (entrega 08/jun e 12/jun)
-- Preparar revisão para AP2 em 01/jul (Timers, ADC, CCP/PWM, Compare)
+- **Apresentação do trabalho elevador — 02/07/2026**
+- Revisar slides `Central_Elevador.pptx` e script `script_apresentacao.md`
+- Testar elevador.c no PICSimLab antes da apresentação

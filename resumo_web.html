@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Central para Elevador — ELE1012 UTFPR</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f0f; color: #e0e0e0; line-height: 1.6; }
+    header { background: #1a1a1a; border-bottom: 1px solid #2a2a2a; padding: 2rem 1rem; text-align: center; }
+    header .badge { display: inline-block; background: #1d4ed8; color: #fff; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.75rem; border-radius: 999px; margin-bottom: 1rem; }
+    header h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; color: #fff; }
+    header p { margin-top: 0.5rem; color: #888; font-size: 0.95rem; }
+    main { max-width: 860px; margin: 0 auto; padding: 2.5rem 1rem 4rem; }
+    section { margin-bottom: 2.5rem; }
+    h2 { font-size: 1.1rem; font-weight: 600; color: #fff; text-transform: uppercase; letter-spacing: 0.06em; border-left: 3px solid #1d4ed8; padding-left: 0.75rem; margin-bottom: 1.2rem; }
+    .lcd { background: #1a3a1a; border: 2px solid #2d5a2d; border-radius: 8px; padding: 1rem 1.5rem; font-family: 'Courier New', monospace; font-size: 1.05rem; color: #39ff14; letter-spacing: 0.12em; display: inline-block; margin-bottom: 0.3rem; }
+    .lcd-row { white-space: pre; }
+    .lcd-wrap { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .lcd-item { margin-bottom: 1rem; }
+    .lcd-label { font-size: 0.72rem; color: #555; text-align: center; margin-top: 0.3rem; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 1.1rem 1.2rem; }
+    .card .label { font-size: 0.72rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.35rem; }
+    .card .value { font-size: 0.97rem; font-weight: 600; color: #e0e0e0; }
+    .states { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+    .state { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 0.9rem 1rem; display: flex; align-items: flex-start; gap: 0.7rem; }
+    .state-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .state h3 { font-size: 0.88rem; font-weight: 600; color: #fff; }
+    .state p  { font-size: 0.78rem; color: #666; margin-top: 0.2rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th { text-align: left; padding: 0.5rem 0.75rem; color: #555; font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid #222; }
+    td { padding: 0.55rem 0.75rem; border-bottom: 1px solid #1a1a1a; color: #ccc; }
+    td:first-child { font-family: monospace; color: #60a5fa; font-size: 0.9rem; }
+    tr:last-child td { border-bottom: none; }
+    .team { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+    .member { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 0.75rem 1.1rem; }
+    .member .name { font-weight: 600; color: #fff; font-size: 0.9rem; }
+    .member .mat  { font-size: 0.75rem; color: #555; margin-top: 0.1rem; }
+    .gh-link { display: inline-flex; align-items: center; gap: 0.5rem; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 0.7rem 1.2rem; color: #60a5fa; text-decoration: none; font-size: 0.9rem; font-family: monospace; }
+    .gh-link:hover { border-color: #60a5fa; }
+    footer { text-align: center; padding: 2rem; color: #333; font-size: 0.78rem; border-top: 1px solid #1a1a1a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">ELE1012 &mdash; Microcontroladores &middot; UTFPR Medianeira &middot; 2026/1</div>
+  <h1>Central para Elevador &mdash; 6 Andares</h1>
+  <p>PIC18F4550 &middot; MPLAB v8.92 + C18 v3.47 &middot; PICSimLab</p>
+</header>
+
+<main>
+
+  <section>
+    <h2>Especificacoes Tecnicas</h2>
+    <div class="cards">
+      <div class="card"><div class="label">Microcontrolador</div><div class="value">PIC18F4550</div></div>
+      <div class="card"><div class="label">Clock</div><div class="value">20 MHz (HS)</div></div>
+      <div class="card"><div class="label">Base de tempo</div><div class="value">Timer0 ISR &mdash; 1 ms</div></div>
+      <div class="card"><div class="label">PWM Motor</div><div class="value">~7 kHz &middot; 38% duty</div></div>
+      <div class="card"><div class="label">ADC Temperatura</div><div class="value">AN0 &middot; 10 bits &middot; Fosc/16</div></div>
+      <div class="card"><div class="label">LCD</div><div class="value">16x2 &middot; 4 bits &middot; CGRAM</div></div>
+      <div class="card"><div class="label">Algoritmo fila</div><div class="value">SCAN (Look)</div></div>
+      <div class="card"><div class="label">Andares</div><div class="value">6 andares &middot; retorno ao 3o</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Maquina de Estados</h2>
+    <div class="states">
+      <div class="state">
+        <div class="state-dot" style="background:#3b82f6"></div>
+        <div><h3>IDLE</h3><p>Aguarda chamada. Retorna ao 3o andar apos 2,3 s de inatividade.</p></div>
+      </div>
+      <div class="state">
+        <div class="state-dot" style="background:#22c55e"></div>
+        <div><h3>MOVENDO</h3><p>1 andar a cada 3 s. Algoritmo SCAN prioriza direcao atual.</p></div>
+      </div>
+      <div class="state">
+        <div class="state-dot" style="background:#f59e0b"></div>
+        <div><h3>PORTA ABERTA</h3><p>1 s abrindo &rarr; 1 s aberta &rarr; 1 s fechando. LED em RD2.</p></div>
+      </div>
+      <div class="state">
+        <div class="state-dot" style="background:#ef4444"></div>
+        <div><h3>SUPERAQUECIDO</h3><p>Temp &gt; 31 C via trimpot AN0. Motor bloqueado ate resfriar.</p></div>
+      </div>
+      <div class="state">
+        <div class="state-dot" style="background:#8b5cf6"></div>
+        <div><h3>RETORNANDO</h3><p>Retorno automatico ao andar 3 por timeout de inatividade.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Display LCD &mdash; Exemplos</h2>
+    <div class="lcd-wrap">
+      <div class="lcd-item">
+        <div class="lcd"><div class="lcd-row">Andar: 3  &#x2191;   </div><div class="lcd-row">Subindo....     </div></div>
+        <div class="lcd-label">MOVENDO (subindo)</div>
+      </div>
+      <div class="lcd-item">
+        <div class="lcd"><div class="lcd-row">Andar: 2        </div><div class="lcd-row">Abrindo porta   </div></div>
+        <div class="lcd-label">PORTA_ABERTA</div>
+      </div>
+      <div class="lcd-item">
+        <div class="lcd"><div class="lcd-row">Andar: 5  STOP  </div><div class="lcd-row">Temp elevada!   </div></div>
+        <div class="lcd-label">SUPERAQUECIDO</div>
+      </div>
+      <div class="lcd-item">
+        <div class="lcd"><div class="lcd-row">Andar: 3        </div><div class="lcd-row">Tmp: 24.5C      </div></div>
+        <div class="lcd-label">IDLE (temperatura)</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Mapeamento de Pinos</h2>
+    <table>
+      <thead><tr><th>Pino</th><th>Funcao</th><th>Descricao</th></tr></thead>
+      <tbody>
+        <tr><td>RA0 / AN0</td><td>ADC temperatura</td><td>Trimpot ANAL0 &mdash; 0 a 50 C simulados</td></tr>
+        <tr><td>RB0 &ndash; RB5</td><td>Botoes andares 1&ndash;6</td><td>Pull-up interno, ativo em LOW, debounce 20 ms</td></tr>
+        <tr><td>RC2 / CCP1</td><td>PWM motor</td><td>~7 kHz, 38% duty cycle via L293D</td></tr>
+        <tr><td>RD0</td><td>Motor IN1</td><td>Direcao L293D</td></tr>
+        <tr><td>RD1</td><td>Motor IN2</td><td>Direcao L293D</td></tr>
+        <tr><td>RD2</td><td>LED porta</td><td>1 = aberta &middot; 0 = fechada</td></tr>
+        <tr><td>RD4 &ndash; RD7</td><td>LCD data bus</td><td>Modo 4 bits &middot; biblioteca_lcd_2x16.h</td></tr>
+        <tr><td>RE0 / RE1 / RE2</td><td>LCD RW / EN / RS</td><td>Gerenciado pela biblioteca</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Equipe</h2>
+    <div class="team">
+      <div class="member"><div class="name">Willian Douglas</div><div class="mat">Matricula 1869027</div></div>
+      <div class="member"><div class="name">Karoline Yang</div><div class="mat">Matricula 2578000</div></div>
+      <div class="member"><div class="name">Ana Caroline</div><div class="mat">Matricula 2486024</div></div>
+      <div class="member"><div class="name">Erick</div><div class="mat">Matricula 2301105</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Repositorio</h2>
+    <a class="gh-link" href="https://github.com/Eng-Willian-DS/elevador-pic18" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      github.com/Eng-Willian-DS/elevador-pic18
+    </a>
+  </section>
+
+</main>
+
+<footer>
+  ELE1012 &mdash; Microcontroladores &middot; UTFPR Medianeira &middot; 2026/1 &middot; Prof. Miyadaira
+</footer>
+
+</body>
+</html>

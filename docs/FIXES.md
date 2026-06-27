@@ -3,6 +3,40 @@ _Append-only. Data | Bug | Causa raiz | Solução_
 
 ---
 
+## 2026-06-25 — Trabalho Elevador: 3 fixes (sessão 8 — lógica porta + direção)
+
+| # | ID | Bug | Causa raiz | Solução |
+|---|---|---|---|---|
+| 1 | FIX-019 | Seta de direção permanecia acesa ao abrir porta; retorno ao 3° andar sempre exibia ↑ | `direcao` nunca resetada ao chegar no destino — `motor_desliga()` corta PWM mas não toca na variável | `direcao = PARADO` inserido no bloco de chegada antes de `porta_abre()` em `maquina_estados()` |
+| 2 | FIX-020 | Ciclo de porta com só 3 mensagens; LED apagava ao sair do estado (fora da janela visual) | `TEMPO_PORTA=3000ms` com 3 fases; `porta_fecha()` chamada na transição PORTA_ABERTA→IDLE, não no momento correto | `TEMPO_PORTA=4000ms`; 4 fases de 1s; `porta_fecha()` chamada em `elapsed>=2000ms` (início da fase Fechando) |
+| 3 | FIX-021 | Pressionar botão do andar atual ignorava o acionamento sem nenhuma resposta | `ler_botoes()` ignorava `andar == andar_atual` incondicionalmente | `else if (estado == IDLE)` abre porta diretamente: `porta_abre()` + `t_porta=ms_tick` + `estado=PORTA_ABERTA` |
+
+**Resultado:** porta com 4 fases visuais completas · seta some ao parar · botão do andar atual funciona
+
+---
+
+## 2026-06-25 — Trabalho Elevador: 2 fixes (sessão 7 — LCD flicker + indicador parado)
+
+| # | ID | Bug | Causa raiz | Solução |
+|---|---|---|---|---|
+| 1 | FIX-017 | LCD piscando preto aleatoriamente em vários pontos do visor | `atualizar_lcd()` chamada a cada iteração do `while(1)` (milhares de vezes/s); cada `lcd_posicao()` envia comando ao HD44780 causando flash visível | Throttle de 100ms adicionado no topo da função: `static t_lcd`; retorna cedo se `ms_tick - t_lcd < 100UL` |
+| 2 | FIX-018 | Linha 1 do LCD sem nenhuma indicação quando elevador está parado | Ramo `else` da direção mostrava 6 espaços em branco (`"      "`) em vez de texto | Substituído por `"PARADO"` (6 chars, encaixa exatamente no espaço da seta) |
+
+**Resultado:** LCD estável sem flicker · display mostra `Andar: 3  PARADO` no estado IDLE
+
+---
+
+## 2026-06-25 — Trabalho Elevador: 2 fixes (sessão 6 — ADC PICSimLab definitivo)
+
+| # | ID | Bug | Causa raiz | Solução |
+|---|---|---|---|---|
+| 1 | FIX-015 | Temperatura lida sempre incorreta no PICSimLab (valores > 1023 ou constantes) | `ADCON2bits.ADFM = 1` não tem efeito: ADCON2 não existe no PIC18F452; ADFM fica em ADCON1 bit7; resultado saía left-justified | `ADCON1 = 0x8E` (bit7=ADFM=1 + bits3:0=PCFG=1110); eliminadas todas as escritas em ADCON2 |
+| 2 | FIX-016 | Conversão ADC irregular/instável no PICSimLab mesmo com timeout | `ADCON0bits.GO = 1` seta bit1; no PIC18F452 GO fica em bit2 → conversão não disparava corretamente | `ADCON0 \|= 0x04` (bit2=GO do PIC18F452) + `Delay10KTCYx(1)` substituindo `while(ADIF)` |
+
+**Resultado:** `init_adc()` reduzido a 2 linhas; `ler_adc()` reduzido a 3 linhas; correção derivada do termometro.c validado na mesma sessão.
+
+---
+
 ## 2026-06-23 — Trabalho Elevador: 2 fixes (sessão 5 — ADC revert + ANSI encoding)
 
 | # | ID | Bug | Causa raiz | Solução |
