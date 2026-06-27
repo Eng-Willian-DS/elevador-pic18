@@ -23,7 +23,7 @@
 >
 > Quarto, se o elevador ficar 2,3 segundos sem nenhuma chamada, ele retorna automaticamente ao terceiro andar.
 >
-> Quinto, ao chegar no andar solicitado, a porta abre e permanece aberta por 1 segundo antes de fechar.
+> Quinto, ao chegar no andar solicitado, a porta passa por 4 fases de 1 segundo cada: Abrindo porta, Porta aberta, Fechando porta e Porta fechada — 4 segundos no total. O LED de porta apaga ao entrar na fase Fechando, aos 2 segundos.
 >
 > E sexto, o sinal de controle do motor é um PWM de aproximadamente 7 quilohertz com ciclo ativo de 38%.
 >
@@ -109,11 +109,9 @@
 >
 > Para configurar o ADC, primeiro definimos a tensão de referência como VDD e VSS — os bits VCFG em zero. Depois, em ADCON1, colocamos PCFG em 1110, que é o código para deixar apenas AN0 como analógico e todos os outros canais como digitais.
 >
-> Em ADCON2, configuramos o clock de conversão. Para 20 MHz, o mínimo é Fosc dividido por 16, que dá TAD de 0,8 microsegundos — exatamente o mínimo permitido pelo datasheet. Os bits ADCS recebem 101 para essa opção.
+> Uma particularidade importante do nosso projeto: o PICSimLab simula o PIC18F452, não o PIC18F4550. No PIC18F452, o registrador ADCON2 não existe. O bit ADFM, que justifica o resultado à direita, fica no bit 7 do próprio ADCON1. Por isso configuramos ADCON1 como 0x8E: bit 7 igual a 1 para resultado justificado à direita, e PCFG igual a 1110 para deixar somente AN0 analógico.
 >
-> O tempo de aquisição automática é configurado em 4 TAD, com ACQT igual a 010. Isso dá 3,2 microsegundos, suficiente para o capacitor de sample-and-hold carregar. E colocamos ADFM igual a 1 para o resultado justificado à direita em ADRESH e ADRESL.
->
-> Para iniciar a conversão: colocamos GO em 1, aguardamos a flag ADIF ser setada — o que leva cerca de 12 microsegundos — e lemos o resultado como ADRESH deslocado 8 bits à esquerda, com OR de ADRESL.
+> Para disparar a conversão, usamos ADCON0 OR 0x04, pois no PIC18F452 o bit GO fica na posição 2, não na posição 1 como no PIC18F4550. E em vez de aguardar a flag ADIF — que não funciona corretamente no simulador — usamos um delay de Delay10KTCYx de 1, equivalente a aproximadamente 2 milissegundos, tempo suficiente para a conversão completar. O resultado é lido combinando ADRESH deslocado 8 bits à esquerda com ADRESL, retornando um valor de 10 bits entre 0 e 1023.
 >
 > O mapeamento de temperatura: multiplicamos o valor do ADC por 50 e dividimos por 1023 para obter graus Celsius inteiros. Para exibir uma casa decimal, multiplicamos por 500 e dividimos por 1023 — isso nos dá décimos de grau. Usamos unsigned long nas multiplicações para evitar overflow de 16 bits. Não usamos float em nenhum momento, porque o C18 LITE tem limitações com ponto flutuante."
 
@@ -173,7 +171,7 @@
 >
 > No estado IDLE, o motor está parado e o sistema aguarda uma chamada ou o timeout de 2,3 segundos. No estado MOVENDO, o motor está ativo e o elevador avança um andar a cada 3 segundos simulados — isso é controlado pelo ms_tick. O estado RETORNANDO funciona exatamente igual ao MOVENDO, mas o destino é sempre o terceiro andar.
 >
-> No estado PORTA_ABERTA, o motor está parado e o LED de porta está aceso. O sistema conta 1 segundo e fecha a porta. No estado SUPERAQUECIDO, o motor para imediatamente e o sistema aguarda a temperatura cair abaixo de 31 graus.
+> No estado PORTA_ABERTA, o motor está parado e o LED de porta está aceso. O sistema executa 4 fases de 1 segundo: Abrindo porta, Porta aberta, Fechando porta e Porta fechada — 4 segundos totais, controlados por TEMPO_PORTA. O LED apaga aos 2 segundos, início da fase Fechando. No estado SUPERAQUECIDO, o motor para imediatamente e o sistema aguarda a temperatura cair abaixo de 31 graus.
 >
 > As transições são verificadas a cada iteração do loop. A temperatura é sempre verificada nos estados de movimento — se subir, vai para SUPERAQUECIDO instantaneamente."
 
@@ -199,7 +197,7 @@
 ## SLIDE 14 — PORTA_ABERTA E SUPERAQUECIDO
 **[ERICK]**
 
-> "No estado PORTA_ABERTA, a única lógica é esperar 1.000 milissegundos passarem desde que a porta abriu. Quando o tempo passa, fechamos a porta, reiniciamos o contador de inatividade e voltamos para IDLE.
+> "No estado PORTA_ABERTA, a lógica acompanha o tempo decorrido desde que a porta abriu usando a variável t_porta. Até 1 segundo exibe Abrindo porta; de 1 a 2 segundos exibe Porta aberta; de 2 a 3 segundos exibe Fechando porta — e é exatamente aos 2 segundos que o LED de porta apaga, simulando o fechamento. De 3 a 4 segundos exibe Porta fechada. Após os 4 segundos completos, reiniciamos o contador de inatividade e voltamos para IDLE.
 >
 > No estado SUPERAQUECIDO, desligamos o motor e colocamos a direção como PARADO a cada iteração — isso garante que o LCD vai mostrar STOP em vez de uma seta. Depois verificamos se a temperatura voltou para 31 graus ou abaixo.
 >
