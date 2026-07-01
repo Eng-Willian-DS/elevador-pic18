@@ -187,7 +187,7 @@ tr:last-child td{border:none}
 /* ── MOBILE LANDSCAPE (altura pequena) ── */
 @media(max-height:500px){
   #qr-fixed{display:none!important}
-  .slide{overflow-y:auto!important;overflow-x:hidden}
+  .slide{overflow-y:auto!important;overflow-x:visible!important}
   .slide-inner{
     flex:none!important;height:auto!important;
     min-height:calc(100% - 4px);overflow:visible!important;
@@ -196,7 +196,7 @@ tr:last-child td{border:none}
   .grid2,.grid3,.grid5,.states,.col,.card,.card-sm,pre,.state-box,.xpl-body{
     flex:none!important;height:auto!important;min-height:0!important;overflow:visible!important
   }
-  pre{font-size:.55rem;overflow-x:auto!important}
+  pre{font-size:.55rem;white-space:pre-wrap!important;word-break:break-all!important}
   h2{font-size:.9rem}
   .speaker-tag{display:none}
   .gloss-strip{flex-direction:column}
@@ -212,8 +212,8 @@ tr:last-child td{border:none}
   /* QR oculto */
   #qr-fixed{display:none!important}
 
-  /* Slide vira scrollável — conteúdo não clipado */
-  .slide{overflow-y:auto!important;overflow-x:hidden}
+  /* Slide vira scrollável — sem clip horizontal */
+  .slide{overflow-y:auto!important;overflow-x:visible!important}
 
   /* slide-inner: altura natural, sem forçar fill */
   .slide-inner{
@@ -233,8 +233,11 @@ tr:last-child td{border:none}
     min-height:0!important;
     overflow:visible!important;
   }
-  pre{overflow-x:auto!important;font-size:.55rem}
-  .xpl{overflow:hidden!important} /* details precisa de hidden para animação de abertura */
+  /* código quebra linha no mobile — evita overflow-x */
+  pre{font-size:.55rem;white-space:pre-wrap!important;word-break:break-all!important;overflow-x:visible!important}
+  .xpl{overflow:hidden!important}
+  /* fórmulas: texto quebra se largo demais */
+  .formula-row .expr,.formula-row .res,.formula-row .lbl{word-break:break-word;overflow-wrap:anywhere}
 
   /* Logo */
   .logo-box img{height:42px}
