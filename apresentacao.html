@@ -881,10 +881,29 @@ document.addEventListener('touchend', e=>{
 
 // ── FULLSCREEN ──
 function toggleFS(){
-  if(!document.fullscreenElement)
-    document.documentElement.requestFullscreen().catch(()=>{});
-  else document.exitFullscreen();
+  const el = document.fullscreenElement
+           || document.webkitFullscreenElement
+           || document.mozFullScreenElement;
+  if(!el){
+    const req = document.documentElement.requestFullscreen
+             || document.documentElement.webkitRequestFullscreen
+             || document.documentElement.mozRequestFullScreen;
+    if(req) req.call(document.documentElement).catch(()=>{});
+  } else {
+    const ex = document.exitFullscreen
+            || document.webkitExitFullscreen
+            || document.mozCancelFullScreen;
+    if(ex) ex.call(document).catch(()=>{});
+  }
 }
+// atualiza texto do botão ao entrar/sair
+['fullscreenchange','webkitfullscreenchange','mozfullscreenchange'].forEach(ev=>{
+  document.addEventListener(ev, ()=>{
+    const btn = document.getElementById('fs-btn');
+    const inFS = !!(document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement);
+    btn.textContent = inFS ? '✕ Sair tela cheia' : '⛶ Tela cheia';
+  });
+});
 
 // init progress
 document.getElementById('progress').style.width = `${1/total*100}%`;
