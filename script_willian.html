@@ -23,6 +23,11 @@
   .dicas li { color: #E6EDF3; font-size: 0.88rem; margin-bottom: 8px; list-style: none; padding-left: 20px; position: relative; }
   .dicas li::before { content: "→"; color: var(--cor); position: absolute; left: 0; }
   .tempo { text-align: center; color: var(--gray); font-size: 0.8rem; margin-top: 24px; }
+  .glossario { margin-top: 28px; }
+  .glossario h3 { color: var(--cor); font-size: 0.9rem; margin-bottom: 14px; border-bottom: 1px solid #30363D; padding-bottom: 6px; }
+  .termo { background: var(--card); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; border-left: 3px solid var(--cor); }
+  .termo .t { font-size: 0.82rem; font-weight: 700; color: var(--cor); margin-bottom: 4px; }
+  .termo .d { font-size: 0.88rem; color: #E6EDF3; line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -98,6 +103,35 @@
     <li>"65.536 − 625 = 64.911 = 0xFD8F — preload para 1 ms"</li>
     <li>"Prescaler 1:8, tick de 1,6 µs → 625 ticks = 1 ms exato"</li>
   </ul>
+</div>
+
+<div class="glossario">
+  <h3>📖 Glossário — termos do projeto</h3>
+
+  <div class="termo">
+    <div class="t">ISR — Interrupt Service Routine</div>
+    <div class="d">Função especial que o PIC executa automaticamente quando o Timer0 estoura. O programa principal para no meio do que está fazendo, a ISR roda (incrementa o ms_tick), e o programa volta exatamente de onde parou. Dura microssegundos e é transparente pro loop.</div>
+  </div>
+
+  <div class="termo">
+    <div class="t">ms_tick</div>
+    <div class="d">Contador global incrementado pela ISR a cada 1 ms. É o "relógio universal" do sistema — todas as contagens de tempo usam ele: <code style="color:#3FB950">(ms_tick - t_inativo) >= 2300</code> significa "já passaram 2,3 segundos".</div>
+  </div>
+
+  <div class="termo">
+    <div class="t">Tick</div>
+    <div class="d">Uma "batida" do Timer0. Com prescaler 1:8 e Fosc 20 MHz, cada tick dura 1,6 µs. São necessários 625 ticks para completar 1 ms — por isso o preload é 65.536 − 625 = 0xFD8F.</div>
+  </div>
+
+  <div class="termo">
+    <div class="t">Prescaler 1:8</div>
+    <div class="d">Divisor de frequência entre o clock do PIC e o Timer0. Sem ele, o Timer0 incrementaria a cada 200 ns (rápido demais). Com 1:8, incrementa só a cada 8 pulsos do clock → 200 ns × 8 = 1,6 µs por tick. É como uma engrenagem redutora: o clock continua em 5 MHz, mas o Timer0 "vê" apenas 1 de cada 8 pulsos.</div>
+  </div>
+
+  <div class="termo">
+    <div class="t">CGRAM — Character Generator RAM</div>
+    <div class="d">Memória interna do LCD onde se definem até 8 caracteres customizados de 5×8 pixels. O LCD padrão só sabe desenhar letras e números. Com a CGRAM criamos as setas ↑ e ↓ que não existem no conjunto padrão do display. Para gravar: <code style="color:#3FB950">lcd_envia_controle(0,0,0x40,45)</code> aponta para o char 0.</div>
+  </div>
 </div>
 
 <p class="tempo">ELE1012 · Prof. Miyadaira · UTFPR Medianeira · 2026</p>
