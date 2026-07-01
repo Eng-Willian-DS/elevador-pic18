@@ -1006,6 +1006,8 @@ function show(n){
   slides[cur].classList.add('active');
   document.getElementById('slide-counter').textContent = `${cur+1} / ${total}`;
   document.getElementById('progress').style.width = `${(cur+1)/total*100}%`;
+  const qr = document.getElementById('qr-fixed');
+  if(qr) qr.style.display = cur === 0 ? 'block' : 'none';
 }
 
 function go(dir){ show(cur+dir); }
