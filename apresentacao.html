@@ -170,38 +170,78 @@ tr:last-child td{border:none}
 
 /* ── MOBILE RETRATO (≤480px) ── */
 @media(max-width:480px){
+  /* QR oculto */
   #qr-fixed{display:none!important}
-  .slide-inner{padding:8px 10px;gap:8px;overflow-y:auto}
+
+  /* Slide vira scrollável — conteúdo não clipado */
+  .slide{overflow-y:auto!important;overflow-x:hidden}
+
+  /* slide-inner: altura natural, sem forçar fill */
+  .slide-inner{
+    flex:none!important;
+    height:auto!important;
+    min-height:calc(100% - 4px);
+    overflow:visible!important;
+    padding:10px 12px 70px;
+    gap:10px
+  }
+
+  /* Remove flex:1 height-filling de todos os filhos */
+  .grid2,.grid3,.grid5,.states,
+  .col,.card,.card-sm,pre{
+    flex:none!important;
+    height:auto!important;
+    min-height:0!important;
+  }
+  .col{overflow:visible!important}
+  pre{overflow-x:auto;overflow-y:visible;max-height:none;font-size:.55rem}
+
+  /* Logo */
   .logo-box img{height:42px}
   .logo-box{padding:6px 12px}
-  #qr-fixed img{width:110px!important;height:110px!important}
-  #qr-fixed{padding:6px;top:8px;left:8px}
-  #qr-fixed .qr-url{font-size:.5rem}
+
+  /* Grids */
   .grid2,.grid3,.grid5{grid-template-columns:1fr}
   .states{grid-template-columns:1fr 1fr}
-  .formula-row{display:flex;flex-direction:column;gap:3px;font-size:.68rem}
-  .formula-row .lbl{font-weight:800}
-  .formula-row .res{display:block;color:#3FB950}
-  pre{font-size:.55rem;max-height:30vh}
-  table{font-size:.62rem}
-  th,td{padding:4px 6px}
+
+  /* Tipografia */
   h1{font-size:1rem}
   h2{font-size:.88rem}
   .sub{font-size:.75rem}
+  .speaker-tag{display:none}
+
+  /* Fórmulas empilhadas */
+  .formula-row{display:flex;flex-direction:column;gap:3px;font-size:.68rem}
+  .formula-row .lbl{font-weight:800}
+  .formula-row .res{display:block;color:#3FB950}
+
+  /* Tabelas */
+  table{font-size:.62rem}
+  th,td{padding:4px 6px}
+  td:first-child{white-space:normal}
+
+  /* Glossário */
   .gloss-strip{flex-direction:column}
   .gloss-pill{padding:6px 8px}
   .gloss-pill .gterm{font-size:.6rem}
   .gloss-pill .gdef{font-size:.68rem}
+
+  /* Bitmap CGRAM */
   .bitmap{grid-template-columns:repeat(5,16px)}
   .bit{width:16px;height:16px}
+
+  /* Membros */
   .member-card .nome{font-size:.6rem;padding:6px 4px 2px}
   .member-card .ra{font-size:.6rem}
+
+  /* Cards */
   .card{padding:8px 10px}
   .card h3{font-size:.7rem}
-  ul.clean li{font-size:.75rem;gap:5px}
+  ul.clean li{font-size:.75rem}
   .lcd{font-size:.72rem;padding:6px 8px}
-  .speaker-tag{display:none}
-  #nav button{padding:8px 16px;font-size:.9rem}
+
+  /* Controles */
+  #nav button{padding:10px 18px;font-size:1rem}
   #fs-btn{padding:6px 10px;font-size:.7rem}
   .bar{height:4px}
 }
