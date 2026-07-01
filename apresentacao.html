@@ -531,6 +531,31 @@ void ISR_T0(void) {
     TMR0L = 0x8F;       // 143 decimal — byte baixo de 0xFD8F = 64.911
     INTCONbits.TMR0IF = 0; // sem isso o PIC re-entra na ISR infinitamente
 }</pre>
+
+        <details class="xpl">
+          <summary>❓ Por que <code>0x0008</code> e o <code>GOTO</code>?</summary>
+          <div class="xpl-body">
+            <p style="font-size:.75rem;margin-bottom:8px">O endereço <strong style="color:var(--accent)">0x0008</strong> é fixo no hardware do PIC18 — é onde o processador salta automaticamente toda vez que ocorre uma interrupção de alta prioridade. Não é possível colocar o código inteiro da ISR nesse endereço (espaço mínimo na flash), por isso coloca-se apenas um salto:</p>
+            <div style="background:#010409;border-radius:6px;padding:8px 12px;font-family:Consolas,monospace;font-size:.72rem;color:#3FB950;margin-bottom:8px">
+              #pragma code int_alta = 0x0008<br>
+              void int_alta(void) &#123; _asm GOTO ISR_TIMER0 _endasm &#125;<br>
+              #pragma code
+            </div>
+            <p style="font-size:.73rem;color:var(--gray)"><code style="color:#3FB950">_asm ... _endasm</code> é assembly inline dentro do C — necessário porque o compilador C18 não gera GOTO diretamente. O <code style="color:#3FB950">#pragma interrupt</code> na ISR real instrui o C18 a gerar o prólogo e epílogo corretos (salvar/restaurar registradores).</p>
+          </div>
+        </details>
+
+        <details class="xpl">
+          <summary>❓ Por que <code>TMR0H</code> antes de <code>TMR0L</code>?</summary>
+          <div class="xpl-body">
+            <p style="font-size:.75rem;margin-bottom:8px">O PIC18 usa um <strong style="color:var(--accent)">buffer interno</strong> de 8 bits para o byte alto do Timer0. A escrita funciona assim:</p>
+            <div style="background:#010409;border-radius:6px;padding:8px 12px;font-family:Consolas,monospace;font-size:.72rem;color:#3FB950;margin-bottom:8px">
+              TMR0H = 0xFD; // vai para o BUFFER (timer ainda não muda)<br>
+              TMR0L = 0x8F; // agora buffer + TMR0L são transferidos JUNTOS
+            </div>
+            <p style="font-size:.73rem;color:var(--gray)">Se inverter a ordem: <code style="color:var(--e)">TMR0L = 0x8F</code> primeiro → transfere <code>0x00:0x8F</code> (buffer ainda vazio) → Timer0 fica em <strong style="color:var(--e)">0x008F = 143</strong> em vez de 64.911 → estouro ocorre em ~104 ms em vez de 1 ms → ms_tick conta errado, tudo quebra.</p>
+          </div>
+        </details>
       </div>
       <div class="col">
         <div class="card" style="border-left:3px solid var(--w)">
@@ -592,30 +617,6 @@ INTCONbits.TMR0IE = 1; INTCONbits.GIE = 1;</pre>
           </div>
         </details>
 
-        <details class="xpl">
-          <summary>❓ Por que <code>0x0008</code> e o <code>GOTO</code>?</summary>
-          <div class="xpl-body">
-            <p style="font-size:.75rem;margin-bottom:8px">O endereço <strong style="color:var(--accent)">0x0008</strong> é fixo no hardware do PIC18 — é onde o processador salta automaticamente toda vez que ocorre uma interrupção de alta prioridade. Não é possível colocar o código inteiro da ISR nesse endereço (espaço mínimo na flash), por isso coloca-se apenas um salto:</p>
-            <div style="background:#010409;border-radius:6px;padding:8px 12px;font-family:Consolas,monospace;font-size:.72rem;color:#3FB950;margin-bottom:8px">
-              #pragma code int_alta = 0x0008<br>
-              void int_alta(void) &#123; _asm GOTO ISR_TIMER0 _endasm &#125;<br>
-              #pragma code
-            </div>
-            <p style="font-size:.73rem;color:var(--gray)"><code style="color:#3FB950">_asm ... _endasm</code> é assembly inline dentro do C — necessário porque o compilador C18 não gera GOTO diretamente. O <code style="color:#3FB950">#pragma interrupt</code> na ISR real instrui o C18 a gerar o prólogo e epílogo corretos (salvar/restaurar registradores).</p>
-          </div>
-        </details>
-
-        <details class="xpl">
-          <summary>❓ Por que <code>TMR0H</code> antes de <code>TMR0L</code>?</summary>
-          <div class="xpl-body">
-            <p style="font-size:.75rem;margin-bottom:8px">O PIC18 usa um <strong style="color:var(--accent)">buffer interno</strong> de 8 bits para o byte alto do Timer0. A escrita funciona assim:</p>
-            <div style="background:#010409;border-radius:6px;padding:8px 12px;font-family:Consolas,monospace;font-size:.72rem;color:#3FB950;margin-bottom:8px">
-              TMR0H = 0xFD; // vai para o BUFFER (timer ainda não muda)<br>
-              TMR0L = 0x8F; // agora buffer + TMR0L são transferidos JUNTOS
-            </div>
-            <p style="font-size:.73rem;color:var(--gray)">Se inverter a ordem: <code style="color:var(--e)">TMR0L = 0x8F</code> primeiro → transfere <code>0x00:0x8F</code> (buffer ainda vazio) → Timer0 fica em <strong style="color:var(--e)">0x008F = 143</strong> em vez de 64.911 → o próximo estouro ocorre em 65.535 − 143 = 65.392 ticks = <strong style="color:var(--e)">~104 ms</strong> em vez de 1 ms → ms_tick conta errado, tudo quebra.</p>
-          </div>
-        </details>
       </div>
     </div>
     <!-- GLOSSÁRIO do slide -->
