@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Script — Willian | Elevador PIC18F4550</title>
+<style>
+  :root { --cor: #58A6FF; --bg: #0D1117; --card: #161B22; --gray: #8B949E; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.7; padding: 16px; max-width: 700px; margin: 0 auto; }
+  header { border-left: 4px solid var(--cor); padding: 12px 16px; margin-bottom: 24px; background: var(--card); border-radius: 0 8px 8px 0; }
+  header h1 { font-size: 1.1rem; color: var(--cor); }
+  header p { font-size: 0.85rem; color: var(--gray); margin-top: 4px; }
+  .badge { display: inline-block; background: var(--cor); color: #0D1117; font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-top: 8px; }
+  .slide { background: var(--card); border-radius: 10px; padding: 20px; margin-bottom: 20px; border-top: 3px solid var(--cor); }
+  .slide-num { font-size: 0.75rem; color: var(--cor); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .slide h2 { font-size: 1rem; color: #fff; margin-bottom: 14px; }
+  .fala { background: #0D1117; border-left: 3px solid var(--cor); border-radius: 0 6px 6px 0; padding: 14px 16px; font-size: 0.95rem; color: #E6EDF3; }
+  .fala p { margin-bottom: 10px; }
+  .fala p:last-child { margin-bottom: 0; }
+  .dicas { background: var(--card); border-radius: 10px; padding: 20px; margin-top: 8px; border: 1px solid var(--cor); }
+  .dicas h3 { color: var(--cor); font-size: 0.9rem; margin-bottom: 12px; }
+  .dicas li { color: #E6EDF3; font-size: 0.88rem; margin-bottom: 8px; list-style: none; padding-left: 20px; position: relative; }
+  .dicas li::before { content: "→"; color: var(--cor); position: absolute; left: 0; }
+  .tempo { text-align: center; color: var(--gray); font-size: 0.8rem; margin-top: 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Willian Douglas dos Santos Clementino</h1>
+  <p>RA 1869027 · ELE1012 Microcontroladores · UTFPR Medianeira</p>
+  <span class="badge">PARTE 1 · Slides 1, 2, 3, 7, 16 · ~6 min</span>
+</header>
+
+<div class="slide">
+  <div class="slide-num">Slide 1</div>
+  <h2>Capa — Abertura</h2>
+  <div class="fala">
+    <p>"Bom dia, professor. Nosso grupo vai apresentar o trabalho de Central para Elevador com 6 andares usando o PIC18F4550. Sou o Willian, RA 1869027. Meus colegas são o Juliano, RA 2041952; a Karoline, RA 2578000; a Ana Caroline, RA 2486024; e o Erick, RA 2301105. Vou começar apresentando a visão geral do projeto."</p>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="slide-num">Slide 2</div>
+  <h2>Visão Geral do Projeto</h2>
+  <div class="fala">
+    <p>"O trabalho tem seis requisitos principais definidos pelo professor.</p>
+    <p>Primeiro, o elevador tem 6 andares, cada um com um botão de chamada conectado ao PORTB do PIC.</p>
+    <p>Segundo, um display LCD 2×16 mostra em tempo real o andar atual, a temperatura medida e o sentido de deslocamento — para isso criamos os símbolos de seta para cima e para baixo diretamente na memória CGRAM do display.</p>
+    <p>Terceiro, a temperatura é simulada por um potenciômetro no pino RA0. Se passar de 31 graus Celsius, o elevador para imediatamente.</p>
+    <p>Quarto, se o elevador ficar 2,3 segundos sem nenhuma chamada, ele retorna automaticamente ao terceiro andar.</p>
+    <p>Quinto, ao chegar no andar solicitado, a porta passa por 4 fases de 1 segundo cada: Abrindo porta, Porta aberta, Fechando porta e Porta fechada — 4 segundos no total.</p>
+    <p>E sexto, o sinal de controle do motor é um PWM de aproximadamente 7 quilohertz com ciclo ativo de 38%.</p>
+    <p>Toda a simulação foi feita no PICSimLab com o MPLAB e compilador C18."</p>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="slide-num">Slide 3</div>
+  <h2>Divisão do Trabalho</h2>
+  <div class="fala">
+    <p>"O conteúdo foi dividido em cinco partes. Eu apresento a visão geral, o Timer0 e a conclusão. O Juliano apresenta o hardware, a pinagem e o PWM. A Karoline apresenta o ADC e o LCD. A Ana Caroline apresenta a CGRAM, os botões e a visão geral da máquina de estados. E o Erick apresenta os detalhes dos estados e o display. Vamos começar."</p>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="slide-num">Slide 7</div>
+  <h2>Timer0 — Base de Tempo de 1 ms</h2>
+  <div class="fala">
+    <p>"Obrigado, Juliano. Vou apresentar agora o Timer0, que é o coração do sistema de temporização.</p>
+    <p>Precisamos medir 2.300 milissegundos de inatividade, 1.000 milissegundos de porta aberta, e 3.000 milissegundos de viagem entre andares — tudo ao mesmo tempo, sem bloquear o loop principal. Para isso, configuramos o Timer0 para gerar uma interrupção exatamente a cada 1 milissegundo.</p>
+    <p>O cálculo é o seguinte: com Fosc de 20 MHz, o ciclo de máquina é 4 dividido por 20 MHz = 200 nanossegundos. Com o prescaler em 1:8, cada incremento do Timer0 leva 1,6 microsegundos. Para completar 1 milissegundo, são necessários 625 incrementos.</p>
+    <p>Como o Timer0 está em modo de 16 bits, ele conta de 0 a 65.535. Para fazer ele transbordar exatamente em 625 contagens, recarregamos ele com 65.536 menos 625, que é 64.911, ou 0xFD8F em hexadecimal.</p>
+    <p>Na ISR, incrementamos a variável global ms_tick, recarregamos TMR0H com 0xFD e TMR0L com 0x8F, e limpamos a flag TMR0IF. Essa interrupção dura microsegundos e o sistema principal continua rodando normalmente.</p>
+    <p>O vetor de interrupção de alta prioridade fica no endereço 0x0008. Usamos o padrão do C18 com pragma code e goto para direcionar o fluxo para a ISR."</p>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="slide-num">Slide 16</div>
+  <h2>Conclusão — Encerramento</h2>
+  <div class="fala">
+    <p>"Então, resumindo o que foi implementado neste trabalho:</p>
+    <p>O Timer0 gera uma base de tempo precisa de 1 milissegundo usando interrupção, o que permite todas as contagens simultâneas sem bloquear o programa.</p>
+    <p>O PWM no CCP1 gera aproximadamente 7 quilohertz com ciclo ativo de 38%, calculado analiticamente a partir da fórmula do datasheet.</p>
+    <p>O ADC lê o potenciômetro e mapeia para 0 a 50 graus usando aritmética inteira, sem ponto flutuante.</p>
+    <p>O LCD usa a biblioteca do professor com 4 bits de dados e exibe símbolos personalizados criados na CGRAM.</p>
+    <p>A máquina de estados com 5 estados gerencia toda a lógica do elevador de forma não-bloqueante.</p>
+    <p>E o debounce por tempo de 20 milissegundos garante leitura confiável dos botões.</p>
+    <p>O projeto está disponível para demonstração no PICSimLab. Agradecemos a atenção e ficamos à disposição para perguntas."</p>
+  </div>
+</div>
+
+<div class="dicas">
+  <h3>Frases-chave para decorar</h3>
+  <ul>
+    <li>"ms_tick incrementa a cada 1 ms na ISR do Timer0, sem bloquear o loop"</li>
+    <li>"65.536 − 625 = 64.911 = 0xFD8F — preload para 1 ms"</li>
+    <li>"Prescaler 1:8, tick de 1,6 µs → 625 ticks = 1 ms exato"</li>
+  </ul>
+</div>
+
+<p class="tempo">ELE1012 · Prof. Miyadaira · UTFPR Medianeira · 2026</p>
+</body>
+</html>

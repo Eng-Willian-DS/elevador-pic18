@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Script Geral — Elevador PIC18F4550</title>
+<style>
+  :root { --bg: #0D1117; --card: #161B22; --gray: #8B949E; --accent: #F9A825; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.7; padding: 16px; max-width: 760px; margin: 0 auto; }
+
+  /* HEADER */
+  .capa { text-align: center; padding: 28px 16px 20px; border-bottom: 1px solid #30363D; margin-bottom: 24px; }
+  .capa h1 { font-size: 1.3rem; color: var(--accent); margin-bottom: 6px; }
+  .capa p { color: var(--gray); font-size: 0.85rem; }
+
+  /* ÍNDICE */
+  .indice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 28px; }
+  .indice-item { background: var(--card); border-radius: 8px; padding: 12px 14px; border-left: 3px solid var(--cor, #555); }
+  .indice-item .nome { font-size: 0.82rem; font-weight: 700; color: var(--cor, #fff); }
+  .indice-item .info { font-size: 0.75rem; color: var(--gray); margin-top: 2px; }
+
+  /* SLIDE */
+  .slide { background: var(--card); border-radius: 10px; padding: 18px; margin-bottom: 16px; border-top: 3px solid var(--cor-slide, #555); }
+  .slide-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .slide-num { background: var(--cor-slide, #555); color: #0D1117; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; white-space: nowrap; }
+  .slide-speaker { font-size: 0.72rem; color: var(--cor-slide, #8B949E); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .slide h2 { font-size: 0.95rem; color: #fff; margin-bottom: 10px; }
+  .fala { background: #0D1117; border-left: 3px solid var(--cor-slide, #555); border-radius: 0 6px 6px 0; padding: 12px 14px; font-size: 0.9rem; color: #E6EDF3; }
+  .fala p { margin-bottom: 8px; }
+  .fala p:last-child { margin-bottom: 0; }
+
+  /* SEÇÃO */
+  .secao-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--cor-secao, #8B949E); margin: 28px 0 10px; padding-left: 4px; border-left: 3px solid var(--cor-secao, #555); padding-left: 8px; }
+
+  /* TEMPO */
+  .tabela-tempo { width: 100%; border-collapse: collapse; margin: 24px 0 8px; font-size: 0.82rem; }
+  .tabela-tempo th { text-align: left; color: var(--gray); font-weight: 600; padding: 6px 10px; border-bottom: 1px solid #30363D; }
+  .tabela-tempo td { padding: 8px 10px; border-bottom: 1px solid #21262D; }
+  .tabela-tempo tr:last-child td { border-bottom: none; font-weight: 700; color: var(--accent); }
+
+  .rodape { text-align: center; color: var(--gray); font-size: 0.78rem; margin-top: 28px; padding-top: 16px; border-top: 1px solid #30363D; }
+
+  /* cores por integrante */
+  .w { --cor-slide: #58A6FF; }
+  .j { --cor-slide: #F9A825; }
+  .k { --cor-slide: #BB87FF; }
+  .a { --cor-slide: #3FB950; }
+  .e { --cor-slide: #FF7B72; }
+</style>
+</head>
+<body>
+
+<div class="capa">
+  <h1>Central para Elevador — PIC18F4550</h1>
+  <p>ELE1012 Microcontroladores · Prof. Miyadaira · UTFPR Medianeira · 2026</p>
+  <p style="margin-top:6px; color:#58A6FF; font-size:0.8rem;">Script completo · ~25 minutos</p>
+</div>
+
+<!-- ÍNDICE -->
+<div class="indice">
+  <div class="indice-item" style="--cor:#58A6FF">
+    <div class="nome">Willian · RA 1869027</div>
+    <div class="info">Slides 1, 2, 3, 7, 16 · ~6 min</div>
+  </div>
+  <div class="indice-item" style="--cor:#F9A825">
+    <div class="nome">Juliano · RA 2041952</div>
+    <div class="info">Slides 4, 5, 6 · ~5 min</div>
+  </div>
+  <div class="indice-item" style="--cor:#BB87FF">
+    <div class="nome">Karoline · RA 2578000</div>
+    <div class="info">Slides 8, 9 · ~4 min</div>
+  </div>
+  <div class="indice-item" style="--cor:#3FB950">
+    <div class="nome">Ana Caroline · RA 2486024</div>
+    <div class="info">Slides 10, 11, 12 · ~5 min</div>
+  </div>
+  <div class="indice-item" style="--cor:#FF7B72; grid-column: span 2">
+    <div class="nome">Erick · RA 2301105</div>
+    <div class="info">Slides 13, 14, 15 · ~5 min</div>
+  </div>
+</div>
+
+<!-- PARTE WILLIAN -->
+<div class="secao-label" style="--cor-secao:#58A6FF">WILLIAN — Slides 1, 2, 3, 7, 16</div>
+
+<div class="slide w">
+  <div class="slide-header">
+    <span class="slide-num">Slide 1</span>
+    <span class="slide-speaker">Willian</span>
+  </div>
+  <h2>Capa — Abertura</h2>
+  <div class="fala">
+    <p>"Bom dia, professor. Nosso grupo vai apresentar o trabalho de Central para Elevador com 6 andares usando o PIC18F4550. Sou o Willian, RA 1869027. Meus colegas são o Juliano, RA 2041952; a Karoline, RA 2578000; a Ana Caroline, RA 2486024; e o Erick, RA 2301105. Vou começar apresentando a visão geral do projeto."</p>
+  </div>
+</div>
+
+<div class="slide w">
+  <div class="slide-header">
+    <span class="slide-num">Slide 2</span>
+    <span class="slide-speaker">Willian</span>
+  </div>
+  <h2>Visão Geral do Projeto</h2>
+  <div class="fala">
+    <p>"O trabalho tem seis requisitos principais definidos pelo professor.</p>
+    <p>Primeiro, o elevador tem 6 andares, cada um com um botão de chamada conectado ao PORTB do PIC.</p>
+    <p>Segundo, um display LCD 2×16 mostra em tempo real o andar atual, a temperatura medida e o sentido de deslocamento — para isso criamos os símbolos de seta para cima e para baixo diretamente na memória CGRAM do display.</p>
+    <p>Terceiro, a temperatura é simulada por um potenciômetro no pino RA0. Se passar de 31 graus Celsius, o elevador para imediatamente.</p>
+    <p>Quarto, se o elevador ficar 2,3 segundos sem nenhuma chamada, ele retorna automaticamente ao terceiro andar.</p>
+    <p>Quinto, ao chegar no andar solicitado, a porta passa por 4 fases de 1 segundo cada — 4 segundos no total. O LED apaga aos 2 segundos.</p>
+    <p>E sexto, o sinal de controle do motor é um PWM de aproximadamente 7 quilohertz com ciclo ativo de 38%.</p>
+    <p>Toda a simulação foi feita no PICSimLab com o MPLAB e compilador C18."</p>
+  </div>
+</div>
+
+<div class="slide w">
+  <div class="slide-header">
+    <span class="slide-num">Slide 3</span>
+    <span class="slide-speaker">Willian</span>
+  </div>
+  <h2>Divisão do Trabalho</h2>
+  <div class="fala">
+    <p>"O conteúdo foi dividido em cinco partes. Eu apresento a visão geral, o Timer0 e a conclusão. O Juliano apresenta o hardware, a pinagem e o PWM. A Karoline apresenta o ADC e o LCD. A Ana Caroline apresenta a CGRAM, os botões e a visão geral da máquina de estados. E o Erick apresenta os detalhes dos estados e o display. Vamos começar."</p>
+  </div>
+</div>
+
+<div class="slide w">
+  <div class="slide-header">
+    <span class="slide-num">Slide 7</span>
+    <span class="slide-speaker">Willian</span>
+  </div>
+  <h2>Timer0 — Base de Tempo de 1 ms</h2>
+  <div class="fala">
+    <p>"Obrigado, Juliano. Vou apresentar agora o Timer0, que é o coração do sistema de temporização.</p>
+    <p>Precisamos medir 2.300 ms de inatividade, 1.000 ms de porta aberta, e 3.000 ms de viagem entre andares — tudo ao mesmo tempo, sem bloquear o loop principal. Para isso, configuramos o Timer0 para gerar uma interrupção exatamente a cada 1 milissegundo.</p>
+    <p>Com Fosc de 20 MHz, o ciclo de máquina é 200 ns. Com o prescaler em 1:8, cada incremento do Timer0 leva 1,6 µs. Para completar 1 ms, são necessários 625 incrementos.</p>
+    <p>Como o Timer0 está em modo de 16 bits, recarregamos ele com 65.536 menos 625 = 64.911 = 0xFD8F.</p>
+    <p>Na ISR, incrementamos ms_tick, recarregamos TMR0H/TMR0L e limpamos a flag TMR0IF. O vetor de alta prioridade fica em 0x0008."</p>
+  </div>
+</div>
+
+<!-- PARTE JULIANO -->
+<div class="secao-label" style="--cor-secao:#F9A825">JULIANO — Slides 4, 5, 6</div>
+
+<div class="slide j">
+  <div class="slide-header">
+    <span class="slide-num">Slide 4</span>
+    <span class="slide-speaker">Juliano</span>
+  </div>
+  <h2>Hardware — PIC18F4550 e Pinagem</h2>
+  <div class="fala">
+    <p>"Obrigado, Willian. Eu sou o Juliano, RA 2041952, e vou apresentar o hardware do projeto.</p>
+    <p>RB0–RB5: botões dos andares com pull-up interno, ativo em LOW. RA0/AN0: potenciômetro que simula temperatura. RC2/CCP1: saída do PWM para o motor.</p>
+    <p>Em PORTD: RD0/RD1 são IN1/IN2 do L293D (direção). RD2 é o LED de porta. RD4–RD7 são o barramento de dados do LCD.</p>
+    <p>No PORTE, RE0–RE2 são RW, Enable e RS do LCD — gerenciados pela biblioteca do professor Miyadaira."</p>
+  </div>
+</div>
+
+<div class="slide j">
+  <div class="slide-header">
+    <span class="slide-num">Slide 5</span>
+    <span class="slide-speaker">Juliano</span>
+  </div>
+  <h2>Config Bits + init_hardware()</h2>
+  <div class="fala">
+    <p>"FOSC = HS, cristal externo 20 MHz. CPUDIV = OSC1_PLL2 mantém CPU em Fosc. WDT desabilitado.</p>
+    <p>ADCON1 = 0x0F: PCFG=1111, desabilita todos os analógicos — PORTB fica 100% digital. AN0 reabilitado depois em init_adc().</p>
+    <p>TRISB = 0xFF: PORTB todo entrada. RBPU = 0: habilita pull-ups internos.</p>
+    <p>RD0, RD1, RD2 como saídas. RC2 saída PWM. RA0 entrada ADC."</p>
+  </div>
+</div>
+
+<div class="slide j">
+  <div class="slide-header">
+    <span class="slide-num">Slide 6</span>
+    <span class="slide-speaker">Juliano</span>
+  </div>
+  <h2>PWM — 7 kHz e 38% Duty Cycle</h2>
+  <div class="fala">
+    <p>"Fpwm = Fosc ÷ (4 × Prescaler × (PR2+1)) = 20M ÷ (4×4×179) = 6.983 Hz ≈ 7 kHz. ✓</p>
+    <p>DC10bit = int(0,38 × 4 × 179) = 272. CCPR1L = 272 >> 2 = 68. DC1B = 272 & 3 = 0. Duty real = 272/716 = 37,99% ≈ 38%. ✓</p>
+    <p>Código: OpenTimer2(1:4), OpenPWM1(178), SetDCPWM1(0) inicializa desligado. Para ligar: SetDCPWM1(272). Para desligar: SetDCPWM1(0)."</p>
+  </div>
+</div>
+
+<!-- PARTE KAROLINE -->
+<div class="secao-label" style="--cor-secao:#BB87FF">KAROLINE — Slides 8, 9</div>
+
+<div class="slide k">
+  <div class="slide-header">
+    <span class="slide-num">Slide 8</span>
+    <span class="slide-speaker">Karoline</span>
+  </div>
+  <h2>ADC — Potenciômetro Simulando Temperatura</h2>
+  <div class="fala">
+    <p>"Obrigado, Willian. Eu sou a Karoline, RA 2578000, e vou apresentar o ADC e o LCD.</p>
+    <p>Potenciômetro em RA0 → ADC 10 bits → 0 a 1023. PCFG = 1110: somente AN0 analógico.</p>
+    <p>Atenção: PICSimLab simula PIC18F452. ADCON2 não existe — ADFM fica em ADCON1[7]. ADCON1 = 0x8E. Bit GO em posição 2 do ADCON0. Não usamos ADIF — usamos Delay10KTCYx(1) ≈ 2 ms.</p>
+    <p>Mapeamento: temp = adc × 50 / 1023. Com decimal: temp_10 = adc × 500 / 1023. Usamos unsigned long para evitar overflow. Sem float."</p>
+  </div>
+</div>
+
+<div class="slide k">
+  <div class="slide-header">
+    <span class="slide-num">Slide 9</span>
+    <span class="slide-speaker">Karoline</span>
+  </div>
+  <h2>LCD 2×16 — Biblioteca Miyadaira</h2>
+  <div class="fala">
+    <p>"LCD controlado pela biblioteca_lcd_2x16.h: 4 bits de dados em RD4–RD7, RS/RW/Enable em RE2/RE0/RE1.</p>
+    <p>Funções: lcd_inicia, lcd_posicao (1-based), lcd_escreve_dado, imprime_string_lcd, imprime_buffer_lcd, lcd_envia_controle.</p>
+    <p>Inicialização: lcd_inicia(0x28, 0x0F, 0x06) — 4 bits, 2 linhas, cursor desloca direita.</p>
+    <p>lcd_envia_controle permite escrever na CGRAM — que a Ana Caroline vai explicar."</p>
+  </div>
+</div>
+
+<!-- PARTE ANA CAROLINE -->
+<div class="secao-label" style="--cor-secao:#3FB950">ANA CAROLINE — Slides 10, 11, 12</div>
+
+<div class="slide a">
+  <div class="slide-header">
+    <span class="slide-num">Slide 10</span>
+    <span class="slide-speaker">Ana Caroline</span>
+  </div>
+  <h2>CGRAM — Criando os Símbolos ↑ e ↓</h2>
+  <div class="fala">
+    <p>"Obrigado, Karoline. Eu sou a Ana Caroline, RA 2486024, e vou apresentar a CGRAM, os botões e a visão geral da máquina de estados.</p>
+    <p>CGRAM do HD44780: até 8 chars de 5×8 pixels. Criamos seta cima (slot 0) e seta baixo (slot 1).</p>
+    <p>Seta cima: 0x04, 0x0E, 0x1F, 0x04, 0x04, 0x04, 0x04, 0x00. Para gravar: lcd_envia_controle(0,0,0x40,45) → aponta para char 0. Char 1: endereço 0x48.</p>
+    <p>Depois de gravar, lcd_posicao(1,1) volta para DDRAM. Exibir: lcd_escreve_dado(0x00) = ↑ | lcd_escreve_dado(0x01) = ↓."</p>
+  </div>
+</div>
+
+<div class="slide a">
+  <div class="slide-header">
+    <span class="slide-num">Slide 11</span>
+    <span class="slide-speaker">Ana Caroline</span>
+  </div>
+  <h2>Botões — ler_botoes() com Debounce</h2>
+  <div class="fala">
+    <p>"6 botões em RB0–RB5. Pull-up habilitado: normal = HIGH, pressionado = LOW. Lógica invertida: bit zero = botão ativo.</p>
+    <p>Bouncing: contato oscila 5–20 ms. Sem debounce, um toque vira vários acionamentos.</p>
+    <p>Solução: array t_deb[7] guarda o timestamp do último toque aceito por andar. Aceita novo toque só se (ms_tick − t_deb[i]) ≥ 20 ms. Lemos PORTB inteiro de uma vez (snapshot). Se válido: adiciona à fila e reinicia t_inativo."</p>
+  </div>
+</div>
+
+<div class="slide a">
+  <div class="slide-header">
+    <span class="slide-num">Slide 12</span>
+    <span class="slide-speaker">Ana Caroline</span>
+  </div>
+  <h2>Máquina de Estados — Visão Geral</h2>
+  <div class="fala">
+    <p>"5 estados. Loop: ler_adc() → ler_botoes() → maquina_estados() → atualizar_lcd().</p>
+    <p>IDLE: motor parado, aguarda botão ou timeout 2,3 s. MOVENDO: motor ativo, avança 1 andar a cada 3 s (ms_tick). RETORNANDO: igual MOVENDO, destino = 3º andar.</p>
+    <p>PORTA_ABERTA: 4 fases de 1 s (Abrindo, Aberta, Fechando, Fechada). LED apaga aos 2 s. SUPERAQUECIDO: motor para imediatamente, aguarda temp ≤ 31 °C.</p>
+    <p>Temperatura verificada em todo estado de movimento — SUPERAQUECIDO é instantâneo."</p>
+  </div>
+</div>
+
+<!-- PARTE ERICK -->
+<div class="secao-label" style="--cor-secao:#FF7B72">ERICK — Slides 13, 14, 15</div>
+
+<div class="slide e">
+  <div class="slide-header">
+    <span class="slide-num">Slide 13</span>
+    <span class="slide-speaker">Erick</span>
+  </div>
+  <h2>Estados IDLE e MOVENDO/RETORNANDO</h2>
+  <div class="fala">
+    <p>"Obrigado, Ana Caroline. Eu sou o Erick, RA 2301105, e vou apresentar os detalhes dos estados e o display.</p>
+    <p>IDLE: motor_desliga(). Se temp > 31 → SUPERAQUECIDO. proximo_fila() usa SCAN — procura próximo andar na direção atual; inverte se não houver. Se há destino: motor liga, vai para MOVENDO. Se 2.300 ms sem chamada e não está no 3º → RETORNANDO.</p>
+    <p>MOVENDO: verifica temp a cada iteração. A cada 3.000 ms avança 1 andar. Se chegou ao destino: remove da fila, motor_desliga(), porta_abre(), vai para PORTA_ABERTA."</p>
+  </div>
+</div>
+
+<div class="slide e">
+  <div class="slide-header">
+    <span class="slide-num">Slide 14</span>
+    <span class="slide-speaker">Erick</span>
+  </div>
+  <h2>Estados PORTA_ABERTA e SUPERAQUECIDO</h2>
+  <div class="fala">
+    <p>"PORTA_ABERTA: 0–1 s = Abrindo; 1–2 s = Aberta; 2–3 s = Fechando (LED apaga em 2 s); 3–4 s = Fechada. Após 4 s: reinicia t_inativo, volta para IDLE.</p>
+    <p>SUPERAQUECIDO: motor_desliga(), direcao = PARADO a cada iteração → LCD mostra STOP. Quando temp ≤ 31 °C: se tinha destino → retoma viagem imediatamente. Senão → IDLE.</p>
+    <p>motor_liga(): IN1/IN2 conforme direção + SetDCPWM1(272). motor_desliga(): SetDCPWM1(0), IN1=IN2=0. porta_abre/fecha: liga/desliga LED em RD2."</p>
+  </div>
+</div>
+
+<div class="slide e">
+  <div class="slide-header">
+    <span class="slide-num">Slide 15</span>
+    <span class="slide-speaker">Erick</span>
+  </div>
+  <h2>atualizar_lcd() — Display do Elevador</h2>
+  <div class="fala">
+    <p>"Chamada a cada iteração. temp_10 = adc × 500 / 1023 (unsigned long). temp_10/10 = inteiro, temp_10%10 = decimal. Sem float.</p>
+    <p>Linha 1: lcd_posicao(1,1) → sprintf("Andar: %d  ", andar) → imprime_buffer_lcd(buf, 10). Depois: se SUPERAQUECIDO → "STOP  "; se SUBINDO → lcd_escreve_dado(0x00) ↑; se DESCENDO → lcd_escreve_dado(0x01) ↓; senão → 6 espaços.</p>
+    <p>Linha 2: lcd_posicao(2,1) → sprintf("Tmp: %u.%uC  ", t/10, t%10) → imprime_buffer_lcd(buf, 16). 16 chars fixos apagam texto anterior."</p>
+  </div>
+</div>
+
+<!-- CONCLUSÃO (WILLIAN) -->
+<div class="secao-label" style="--cor-secao:#58A6FF">WILLIAN — Slide 16 (Conclusão)</div>
+
+<div class="slide w">
+  <div class="slide-header">
+    <span class="slide-num">Slide 16</span>
+    <span class="slide-speaker">Willian — Encerramento</span>
+  </div>
+  <h2>Conclusão</h2>
+  <div class="fala">
+    <p>"Então, resumindo: Timer0 gera base de 1 ms não-bloqueante. PWM no CCP1: 7 kHz, 38% duty calculado analiticamente. ADC mapeia 0–50 °C sem float. LCD 4 bits com símbolos CGRAM. Máquina de 5 estados SCAN gerencia toda a lógica. Debounce 20 ms garante leitura dos botões.</p>
+    <p>O projeto está disponível para demonstração no PICSimLab. Agradecemos a atenção e ficamos à disposição para perguntas."</p>
+  </div>
+</div>
+
+<!-- TABELA DE TEMPO -->
+<table class="tabela-tempo">
+  <thead><tr><th>Integrante</th><th>Slides</th><th>Tempo</th></tr></thead>
+  <tbody>
+    <tr><td style="color:#58A6FF">Willian</td><td>1, 2, 3, 7, 16</td><td>~6 min</td></tr>
+    <tr><td style="color:#F9A825">Juliano</td><td>4, 5, 6</td><td>~5 min</td></tr>
+    <tr><td style="color:#BB87FF">Karoline</td><td>8, 9</td><td>~4 min</td></tr>
+    <tr><td style="color:#3FB950">Ana Caroline</td><td>10, 11, 12</td><td>~5 min</td></tr>
+    <tr><td style="color:#FF7B72">Erick</td><td>13, 14, 15</td><td>~5 min</td></tr>
+    <tr><td>Total</td><td>16 slides</td><td>~25 min</td></tr>
+  </tbody>
+</table>
+
+<div class="rodape">ELE1012 · Prof. Alberto Noboru Miyadaira · UTFPR Medianeira · 2026</div>
+</body>
+</html>

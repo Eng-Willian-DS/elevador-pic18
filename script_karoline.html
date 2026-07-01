@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Script — Karoline | Elevador PIC18F4550</title>
+<style>
+  :root { --cor: #BB87FF; --bg: #0D1117; --card: #161B22; --gray: #8B949E; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.7; padding: 16px; max-width: 700px; margin: 0 auto; }
+  header { border-left: 4px solid var(--cor); padding: 12px 16px; margin-bottom: 24px; background: var(--card); border-radius: 0 8px 8px 0; }
+  header h1 { font-size: 1.1rem; color: var(--cor); }
+  header p { font-size: 0.85rem; color: var(--gray); margin-top: 4px; }
+  .badge { display: inline-block; background: var(--cor); color: #0D1117; font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-top: 8px; }
+  .slide { background: var(--card); border-radius: 10px; padding: 20px; margin-bottom: 20px; border-top: 3px solid var(--cor); }
+  .slide-num { font-size: 0.75rem; color: var(--cor); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .slide h2 { font-size: 1rem; color: #fff; margin-bottom: 14px; }
+  .fala { background: #0D1117; border-left: 3px solid var(--cor); border-radius: 0 6px 6px 0; padding: 14px 16px; font-size: 0.95rem; color: #E6EDF3; }
+  .fala p { margin-bottom: 10px; }
+  .fala p:last-child { margin-bottom: 0; }
+  .dicas { background: var(--card); border-radius: 10px; padding: 20px; margin-top: 8px; border: 1px solid var(--cor); }
+  .dicas h3 { color: var(--cor); font-size: 0.9rem; margin-bottom: 12px; }
+  .dicas li { color: #E6EDF3; font-size: 0.88rem; margin-bottom: 8px; list-style: none; padding-left: 20px; position: relative; }
+  .dicas li::before { content: "→"; color: var(--cor); position: absolute; left: 0; }
+  .tempo { text-align: center; color: var(--gray); font-size: 0.8rem; margin-top: 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Karoline Vitória de Freitas Yang</h1>
+  <p>RA 2578000 · ELE1012 Microcontroladores · UTFPR Medianeira</p>
+  <span class="badge">PARTE 3 · Slides 8, 9 · ~4 min</span>
+</header>
+
+<div class="slide">
+  <div class="slide-num">Slide 8</div>
+  <h2>ADC — Potenciômetro Simulando Temperatura</h2>
+  <div class="fala">
+    <p>"Obrigado, Willian. Eu sou a Karoline, RA 2578000, e vou apresentar o ADC e o LCD.</p>
+    <p>O potenciômetro conectado em RA0 simula a temperatura. O ADC do PIC tem resolução de 10 bits, então retorna valores de 0 a 1023 correspondentes a 0 a 5 volts.</p>
+    <p>Para configurar o ADC, primeiro definimos a tensão de referência como VDD e VSS — os bits VCFG em zero. Depois, em ADCON1, colocamos PCFG em 1110, que é o código para deixar apenas AN0 como analógico e todos os outros canais como digitais.</p>
+    <p>Uma particularidade importante do nosso projeto: o PICSimLab simula o PIC18F452, não o PIC18F4550. No PIC18F452, o registrador ADCON2 não existe. O bit ADFM, que justifica o resultado à direita, fica no bit 7 do próprio ADCON1. Por isso configuramos ADCON1 como 0x8E: bit 7 igual a 1 para resultado justificado à direita, e PCFG igual a 1110 para deixar somente AN0 analógico.</p>
+    <p>Para disparar a conversão, usamos ADCON0 OR 0x04, pois no PIC18F452 o bit GO fica na posição 2, não na posição 1 como no PIC18F4550. E em vez de aguardar a flag ADIF — que não funciona corretamente no simulador — usamos um delay de Delay10KTCYx de 1, equivalente a aproximadamente 2 milissegundos, tempo suficiente para a conversão completar.</p>
+    <p>O mapeamento de temperatura: multiplicamos o valor do ADC por 50 e dividimos por 1023 para obter graus Celsius inteiros. Para exibir uma casa decimal, multiplicamos por 500 e dividimos por 1023. Usamos unsigned long nas multiplicações para evitar overflow de 16 bits. Não usamos float em nenhum momento, porque o C18 LITE tem limitações com ponto flutuante."</p>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="slide-num">Slide 9</div>
+  <h2>LCD 2×16 — Biblioteca Miyadaira</h2>
+  <div class="fala">
+    <p>"Agora o LCD. O display LCD 2×16 é controlado pela biblioteca_lcd_2x16.h do professor Miyadaira, que usa 4 bits de dados nos pinos RD4 a RD7, e os sinais de controle RS, RW e Enable nos pinos RE2, RE0 e RE1 respectivamente.</p>
+    <p>As principais funções que usamos são: lcd_inicia, que inicializa o display; lcd_posicao, que move o cursor para uma linha e coluna específicas — numeradas a partir de 1; lcd_escreve_dado, que escreve um único byte no display; imprime_string_lcd, que envia uma string armazenada na memória de programa; e imprime_buffer_lcd, que envia um número específico de bytes de um buffer na RAM.</p>
+    <p>Para inicializar, chamamos lcd_inicia com três parâmetros: 0x28, que configura modo de 4 bits, 2 linhas e matriz 8×5; 0x0F, que liga o display e ativa o cursor piscante; e 0x06, que faz o cursor se mover para a direita após cada caractere.</p>
+    <p>Uma função que usamos muito é lcd_envia_controle, que envia comandos diretos para o controlador do display, incluindo comandos de escrita na memória CGRAM — que a Ana Caroline vai explicar no próximo slide."</p>
+  </div>
+</div>
+
+<div class="dicas">
+  <h3>Frases-chave para decorar</h3>
+  <ul>
+    <li>"PCFG = 1110: somente AN0 analógico"</li>
+    <li>"PICSimLab usa PIC18F452 — ADFM em ADCON1[7], não em ADCON2"</li>
+    <li>"temp = adc × 50 / 1023 | com decimal: adc × 500 / 1023"</li>
+    <li>"lcd_inicia(0x28, 0x0F, 0x06) — 4 bits, 2 linhas, cursor direita"</li>
+  </ul>
+</div>
+
+<p class="tempo">ELE1012 · Prof. Miyadaira · UTFPR Medianeira · 2026</p>
+</body>
+</html>

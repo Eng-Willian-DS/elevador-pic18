@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Script — Ana Caroline | Elevador PIC18F4550</title>
+<style>
+  :root { --cor: #3FB950; --bg: #0D1117; --card: #161B22; --gray: #8B949E; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.7; padding: 16px; max-width: 700px; margin: 0 auto; }
+  header { border-left: 4px solid var(--cor); padding: 12px 16px; margin-bottom: 24px; background: var(--card); border-radius: 0 8px 8px 0; }
+  header h1 { font-size: 1.1rem; color: var(--cor); }
+  header p { font-size: 0.85rem; color: var(--gray); margin-top: 4px; }
+  .badge { display: inline-block; background: var(--cor); color: #0D1117; font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-top: 8px; }
+  .slide { background: var(--card); border-radius: 10px; padding: 20px; margin-bottom: 20px; border-top: 3px solid var(--cor); }
+  .slide-num { font-size: 0.75rem; color: var(--cor); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .slide h2 { font-size: 1rem; color: #fff; margin-bottom: 14px; }
+  .fala { background: #0D1117; border-left: 3px solid var(--cor); border-radius: 0 6px 6px 0; padding: 14px 16px; font-size: 0.95rem; color: #E6EDF3; }
+  .fala p { margin-bottom: 10px; }
+  .fala p:last-child { margin-bottom: 0; }
+  .dicas { background: var(--card); border-radius: 10px; padding: 20px; margin-top: 8px; border: 1px solid var(--cor); }
+  .dicas h3 { color: var(--cor); font-size: 0.9rem; margin-bottom: 12px; }
+  .dicas li { color: #E6EDF3; font-size: 0.88rem; margin-bottom: 8px; list-style: none; padding-left: 20px; position: relative; }
+  .dicas li::before { content: "→"; color: var(--cor); position: absolute; left: 0; }
+  .tempo { text-align: center; color: var(--gray); font-size: 0.8rem; margin-top: 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ana Caroline Soares Baptista</h1>
+  <p>RA 2486024 · ELE1012 Microcontroladores · UTFPR Medianeira</p>
+  <span class="badge">PARTE 4 · Slides 10, 11, 12 · ~5 min</span>
+</header>
+
+<div class="slide">
+  <div class="slide-num">Slide 10</div>
+  <h2>CGRAM — Criando os Símbolos ↑ e ↓</h2>
+  <div class="fala">
+    <p>"Obrigado, Karoline. Eu sou a Ana Caroline, RA 2486024, e vou apresentar a CGRAM, os botões e a visão geral da máquina de estados.</p>
+    <p>O controlador HD44780 do LCD tem uma memória especial chamada CGRAM, que permite criar até 8 caracteres personalizados de 5 por 8 pixels. Nós criamos dois: a seta para cima no slot 0 e a seta para baixo no slot 1.</p>
+    <p>Cada caractere é definido por 8 bytes, onde cada byte representa uma linha de pixels — os 5 bits menos significativos definem os pixels ativos.</p>
+    <p>Para a seta para cima, o byte 0x04 ativa só o pixel central na primeira linha, 0x0E ativa os três centrais na segunda, 0x1F ativa todos os cinco na terceira, e depois só o pixel central nas linhas seguintes.</p>
+    <p>Para gravar na CGRAM, enviamos o comando 0x40 com lcd_envia_controle — isso aponta o cursor para a primeira posição da CGRAM, que é o caractere 0. Depois enviamos os 8 bytes com lcd_escreve_dado. Para o caractere 1, o endereço é 0x48.</p>
+    <p>Após gravar, chamamos lcd_posicao para voltar o cursor ao DDRAM — a memória de dados do display.</p>
+    <p>Para exibir o símbolo no display, usamos lcd_escreve_dado com zero para mostrar a seta para cima, e com 1 para mostrar a seta para baixo."</p>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="slide-num">Slide 11</div>
+  <h2>Botões — ler_botoes() com Debounce</h2>
+  <div class="fala">
+    <p>"Os 6 botões estão conectados nos pinos RB0 a RB5. O pull-up interno está habilitado, então o nível lógico normal é HIGH. Quando o botão é pressionado, o pino vai a LOW — por isso usamos lógica invertida: o bit igual a zero significa que o botão está ativo.</p>
+    <p>O problema dos botões mecânicos é o bouncing. Quando pressionamos um botão, o contato mecânico oscila por cerca de 5 a 20 milissegundos antes de estabilizar. Sem tratamento, uma única pressão poderia ser lida como vários acionamentos.</p>
+    <p>Nossa solução usa debounce por tempo. Mantemos um array estático t_deb com 7 posições, onde guardamos o timestamp em milissegundos do último acionamento aceito para cada andar.</p>
+    <p>A cada chamada da função ler_botoes, lemos o PORTB inteiro de uma vez para ter um snapshot consistente. Para cada andar de 1 a 6, verificamos se o bit correspondente está em zero. Se estiver, verificamos se já passaram pelo menos 20 milissegundos desde o último acionamento aceito. Se sim, atualizamos o timestamp, e se o andar pressionado não for o andar atual, adicionamos o andar à fila e reiniciamos o contador de inatividade."</p>
+  </div>
+</div>
+
+<div class="slide">
+  <div class="slide-num">Slide 12</div>
+  <h2>Máquina de Estados — Visão Geral</h2>
+  <div class="fala">
+    <p>"Agora a visão geral da máquina de estados que controla toda a lógica do elevador.</p>
+    <p>São 5 estados. O loop principal executa quatro funções repetidamente: ler o ADC, ler os botões, executar o estado atual, e atualizar o LCD.</p>
+    <p>No estado IDLE, o motor está parado e o sistema aguarda uma chamada ou o timeout de 2,3 segundos. No estado MOVENDO, o motor está ativo e o elevador avança um andar a cada 3 segundos simulados — isso é controlado pelo ms_tick. O estado RETORNANDO funciona exatamente igual ao MOVENDO, mas o destino é sempre o terceiro andar.</p>
+    <p>No estado PORTA_ABERTA, o motor está parado e o LED de porta está aceso. O sistema executa 4 fases de 1 segundo: Abrindo porta, Porta aberta, Fechando porta e Porta fechada — 4 segundos totais. O LED apaga aos 2 segundos, início da fase Fechando. No estado SUPERAQUECIDO, o motor para imediatamente e o sistema aguarda a temperatura cair abaixo de 31 graus.</p>
+    <p>As transições são verificadas a cada iteração do loop. A temperatura é sempre verificada nos estados de movimento — se subir, vai para SUPERAQUECIDO instantaneamente."</p>
+  </div>
+</div>
+
+<div class="dicas">
+  <h3>Frases-chave para decorar</h3>
+  <ul>
+    <li>"CGRAM: lcd_envia_controle(0,0,0x40,45) aponta para o char 0"</li>
+    <li>"lcd_escreve_dado(0x00) = seta cima | lcd_escreve_dado(0x01) = seta baixo"</li>
+    <li>"Debounce: aceita botão só se passaram ≥ 20 ms desde o último"</li>
+    <li>"5 estados: IDLE → MOVENDO → PORTA_ABERTA → IDLE | SUPERAQUECIDO em qualquer estado"</li>
+  </ul>
+</div>
+
+<p class="tempo">ELE1012 · Prof. Miyadaira · UTFPR Medianeira · 2026</p>
+</body>
+</html>
