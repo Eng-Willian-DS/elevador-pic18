@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central para Elevador — PIC18F4550</title>
+<style>
+/* ── RESET & BASE ── */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D1117;--card:#161B22;--gray:#8B949E;--white:#E6EDF3;
+  --w:#58A6FF;--j:#F9A825;--k:#BB87FF;--a:#3FB950;--e:#FF7B72;
+  --accent:#F9A825;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--white);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+
+/* ── DECK ── */
+#deck{width:100%;height:100%;position:relative}
+.slide{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease;
+  transform:translateX(60px);
+  padding:0;overflow:hidden;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.slide.prev{transform:translateX(-60px)}
+
+/* ── HEADER BAR ── */
+.bar{height:6px;width:100%;flex-shrink:0}
+.slide-inner{flex:1;display:flex;flex-direction:column;padding:clamp(20px,3vw,40px) clamp(20px,4vw,60px);overflow:hidden;gap:16px}
+
+/* ── SPEAKER TAG ── */
+.speaker-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
+.speaker-tag{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:.85}
+.slide-label{font-size:.7rem;color:var(--gray)}
+
+/* ── TITLES ── */
+h1{font-size:clamp(1.4rem,3.5vw,2.6rem);font-weight:800;line-height:1.15}
+h2{font-size:clamp(1.1rem,2.5vw,1.8rem);font-weight:700;color:var(--white);line-height:1.2}
+.sub{font-size:clamp(.8rem,1.5vw,1rem);color:var(--gray);margin-top:4px}
+
+/* ── GRID UTILS ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1;min-height:0}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.col{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:hidden}
+
+/* ── CARDS ── */
+.card{background:var(--card);border-radius:10px;padding:14px 16px;flex:1;min-height:0;overflow:hidden}
+.card h3{font-size:.8rem;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.card-sm{background:var(--card);border-radius:8px;padding:12px 14px}
+
+/* ── BULLETS ── */
+ul.clean{list-style:none;display:flex;flex-direction:column;gap:7px}
+ul.clean li{font-size:clamp(.8rem,1.4vw,.95rem);color:var(--white);padding-left:18px;position:relative;line-height:1.4}
+ul.clean li::before{content:"▸";position:absolute;left:0;font-size:.75rem}
+
+/* ── CODE ── */
+pre{background:#010409;border-radius:8px;padding:12px 14px;font-family:Consolas,"Courier New",monospace;
+    font-size:clamp(.65rem,1.1vw,.82rem);line-height:1.55;color:#3FB950;overflow:auto;flex:1;min-height:0}
+
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse;font-size:clamp(.72rem,1.2vw,.85rem)}
+th{text-align:left;padding:6px 10px;font-weight:600;color:var(--gray);border-bottom:1px solid #30363D}
+td{padding:7px 10px;border-bottom:1px solid #21262D;vertical-align:top}
+td:first-child{font-family:Consolas,monospace;color:#3FB950;white-space:nowrap}
+tr:last-child td{border:none}
+
+/* ── MEMBER CARDS (slide 1) ── */
+.member-card{background:var(--card);border-radius:10px;overflow:hidden;text-align:center;padding-bottom:12px}
+.member-card .stripe{height:5px}
+.member-card .nome{font-size:clamp(.65rem,1vw,.8rem);font-weight:700;padding:10px 8px 4px;line-height:1.3}
+.member-card .ra{font-size:.72rem;font-weight:700}
+
+/* ── STATE BOXES ── */
+.states{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;flex:1;min-height:0}
+.state-box{background:var(--card);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:4px;overflow:hidden}
+.state-box .sname{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.state-box p{font-size:.72rem;color:var(--gray);line-height:1.4}
+
+/* ── LCD MOCK ── */
+.lcd{background:#1A3A1A;border:2px solid #3FB950;border-radius:6px;padding:10px 14px;font-family:Consolas,monospace;font-size:clamp(.85rem,1.5vw,1rem);color:#3FB950;line-height:2;letter-spacing:.05em}
+
+/* ── FORMULA ROWS ── */
+.formula-row{display:grid;grid-template-columns:120px 1fr 1fr;gap:8px;align-items:center;background:var(--card);border-radius:6px;padding:8px 12px;font-size:clamp(.72rem,1.2vw,.85rem)}
+.formula-row .lbl{color:var(--accent);font-weight:700;font-family:Consolas,monospace}
+.formula-row .expr{color:var(--white);font-family:Consolas,monospace}
+.formula-row .res{color:#3FB950;font-weight:700;font-family:Consolas,monospace}
+
+/* ── BITMAP ── */
+.bitmap{display:grid;grid-template-columns:repeat(5,22px);gap:3px}
+.bit{width:22px;height:22px;border-radius:3px}
+.bit.on{background:var(--white)}
+.bit.off{background:#30363D}
+
+/* ── PROGRESS BAR ── */
+#progress{position:fixed;bottom:0;left:0;height:3px;background:var(--accent);transition:width .3s ease;z-index:100}
+
+/* ── NAV ── */
+#nav{position:fixed;bottom:10px;right:16px;display:flex;align-items:center;gap:10px;z-index:100;opacity:.6;font-size:.72rem;color:var(--gray)}
+#nav button{background:var(--card);border:none;color:var(--gray);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.75rem}
+#nav button:hover{color:var(--white)}
+#slide-counter{min-width:40px;text-align:center}
+
+/* ── FULLSCREEN BTN ── */
+#fs-btn{position:fixed;top:12px;right:14px;background:var(--card);border:none;color:var(--gray);
+  padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.75rem;z-index:100;opacity:.6}
+#fs-btn:hover{opacity:1}
+
+/* ── DIVIDER LINE ── */
+.divider{height:2px;border-radius:2px;flex-shrink:0}
+
+/* ── RESPONSIVO ── */
+@media(max-width:700px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  .grid5,.states{grid-template-columns:repeat(2,1fr)}
+  pre{font-size:.62rem}
+  h1{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+
+<button id="fs-btn" onclick="toggleFS()">⛶ Tela cheia</button>
+<div id="progress"></div>
+<div id="nav">
+  <button onclick="go(-1)">‹</button>
+  <span id="slide-counter">1 / 16</span>
+  <button onclick="go(1)">›</button>
+</div>
+
+<div id="deck">
+
+<!-- ══════════════ SLIDE 1 — CAPA ══════════════ -->
+<div class="slide active" data-cor="var(--w)">
+  <div class="bar" style="background:var(--w)"></div>
+  <div class="slide-inner" style="justify-content:center;gap:20px">
+    <div style="text-align:center">
+      <div style="font-size:.75rem;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">ELE1012 — Microcontroladores · Prof. Miyadaira · UTFPR Medianeira · 2026</div>
+      <h1 style="color:var(--accent);font-size:clamp(1.8rem,5vw,3.2rem)">CENTRAL PARA ELEVADOR</h1>
+      <div class="sub" style="font-size:clamp(.9rem,2vw,1.2rem);margin-top:8px">Controle de 6 andares com PIC18F4550</div>
+    </div>
+    <div class="divider" style="background:var(--w);width:80%;margin:0 auto"></div>
+    <div class="grid5" style="margin-top:8px">
+      <div class="member-card"><div class="stripe" style="background:var(--w)"></div><div class="nome">Willian Douglas dos Santos Clementino</div><div class="ra" style="color:var(--w)">RA 1869027</div></div>
+      <div class="member-card"><div class="stripe" style="background:var(--j)"></div><div class="nome">Juliano Barbosa Paixão</div><div class="ra" style="color:var(--j)">RA 2041952</div></div>
+      <div class="member-card"><div class="stripe" style="background:var(--k)"></div><div class="nome">Karoline Vitória de Freitas Yang</div><div class="ra" style="color:var(--k)">RA 2578000</div></div>
+      <div class="member-card"><div class="stripe" style="background:var(--a)"></div><div class="nome">Ana Caroline Soares Baptista</div><div class="ra" style="color:var(--a)">RA 2486024</div></div>
+      <div class="member-card"><div class="stripe" style="background:var(--e)"></div><div class="nome">Erick Rodrigues Villalva</div><div class="ra" style="color:var(--e)">RA 2301105</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 2 — VISÃO GERAL ══════════════ -->
+<div class="slide" data-cor="var(--w)">
+  <div class="bar" style="background:var(--w)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--w)">Visão Geral do Projeto</h2><div class="sub">6 requisitos definidos pelo professor</div></div>
+      <span class="speaker-tag" style="color:var(--w)">Willian · Slide 2</span>
+    </div>
+    <div class="divider" style="background:var(--w)"></div>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:10px;min-height:0">
+      <div class="card-sm" style="border-left:3px solid var(--w)"><div style="font-size:.72rem;color:var(--w);font-weight:700;margin-bottom:4px">① ANDARES</div><div style="font-size:.85rem">6 andares com botão de chamada individual em RB0–RB5 (pull-up interno, ativo em LOW)</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--w)"><div style="font-size:.72rem;color:var(--w);font-weight:700;margin-bottom:4px">② LCD</div><div style="font-size:.85rem">Display 2×16 exibe andar atual, temperatura e sentido ↑↓ com símbolos CGRAM customizados</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--w)"><div style="font-size:.72rem;color:var(--w);font-weight:700;margin-bottom:4px">③ TEMPERATURA</div><div style="font-size:.85rem">Potenciômetro em RA0/AN0 simula 0–50 °C — elevador para imediatamente se temp &gt; 31 °C</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--w)"><div style="font-size:.72rem;color:var(--w);font-weight:700;margin-bottom:4px">④ RETORNO</div><div style="font-size:.85rem">Após 2,3 s sem nenhuma chamada, retorna automaticamente ao 3º andar</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--w)"><div style="font-size:.72rem;color:var(--w);font-weight:700;margin-bottom:4px">⑤ PORTA</div><div style="font-size:.85rem">4 fases de 1 s: Abrindo · Aberta · Fechando · Fechada. LED apaga aos 2 s (início do fechamento)</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--w)"><div style="font-size:.72rem;color:var(--w);font-weight:700;margin-bottom:4px">⑥ PWM</div><div style="font-size:.85rem">Sinal CCP1/RC2 para controle do motor L293D — ≈ 7 kHz com ciclo ativo de 38%</div></div>
+    </div>
+    <div style="font-size:.75rem;color:var(--gray);text-align:center">Plataforma: PIC18F4550 · IDE: MPLAB v8.92 + C18 v3.47 LITE · Simulação: PICSimLab v0.8.6</div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 3 — DIVISÃO ══════════════ -->
+<div class="slide" data-cor="var(--w)">
+  <div class="bar" style="background:var(--w)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--w)">Divisão do Trabalho</h2><div class="sub">5 partes · ~25 minutos no total</div></div>
+      <span class="speaker-tag" style="color:var(--w)">Willian · Slide 3</span>
+    </div>
+    <div class="divider" style="background:var(--w)"></div>
+    <div class="grid5" style="flex:1;min-height:0">
+      <div class="card" style="border-top:3px solid var(--w)">
+        <h3 style="color:var(--w)">Parte 1 — Willian</h3>
+        <ul class="clean"><li>Visão geral (S1–3)</li><li>Timer0 ISR 1 ms (S7)</li><li>Conclusão (S16)</li><li style="color:var(--gray)">~6 min</li></ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--j)">
+        <h3 style="color:var(--j)">Parte 2 — Juliano</h3>
+        <ul class="clean"><li>Pinagem PIC18F4550</li><li>Config bits + init</li><li>PWM 7 kHz / 38%</li><li style="color:var(--gray)">~5 min</li></ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--k)">
+        <h3 style="color:var(--k)">Parte 3 — Karoline</h3>
+        <ul class="clean"><li>ADC → temp 0–50 °C</li><li>LCD Miyadaira 4-bit</li><li style="color:var(--gray)">~4 min</li></ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--a)">
+        <h3 style="color:var(--a)">Parte 4 — Ana Caroline</h3>
+        <ul class="clean"><li>CGRAM ↑ ↓ 5×8 px</li><li>Botões debounce 20 ms</li><li>Estados — visão geral</li><li style="color:var(--gray)">~5 min</li></ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--e)">
+        <h3 style="color:var(--e)">Parte 5 — Erick</h3>
+        <ul class="clean"><li>IDLE · MOVENDO · SCAN</li><li>PORTA · SUPERAQUECIDO</li><li>atualizar_lcd()</li><li style="color:var(--gray)">~5 min</li></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 4 — PINAGEM ══════════════ -->
+<div class="slide" data-cor="var(--j)">
+  <div class="bar" style="background:var(--j)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--j)">Hardware — PIC18F4550 e Pinagem</h2></div>
+      <span class="speaker-tag" style="color:var(--j)">Juliano · Slide 4</span>
+    </div>
+    <div class="divider" style="background:var(--j)"></div>
+    <div style="flex:1;min-height:0;overflow:auto">
+      <table>
+        <thead><tr><th>Pino</th><th>Porta</th><th>Função</th></tr></thead>
+        <tbody>
+          <tr><td>RB0–RB5</td><td style="color:var(--gray)">PORTB</td><td>Botões andares 1–6 · pull-up interno · ativo em LOW</td></tr>
+          <tr><td>RA0 / AN0</td><td style="color:var(--gray)">PORTA</td><td>Potenciômetro ANAL0 · simula temperatura 0–50 °C · ADC</td></tr>
+          <tr><td>RC2 / CCP1</td><td style="color:var(--gray)">PORTC</td><td>Saída PWM do motor · ≈ 7 kHz · 38% duty cycle</td></tr>
+          <tr><td>RD0</td><td style="color:var(--gray)">PORTD</td><td>Motor IN1 — define direção de giro via L293D</td></tr>
+          <tr><td>RD1</td><td style="color:var(--gray)">PORTD</td><td>Motor IN2 — define direção de giro via L293D</td></tr>
+          <tr><td>RD2</td><td style="color:var(--gray)">PORTD</td><td>LED de porta · 1 = aberta · 0 = fechada</td></tr>
+          <tr><td>RD4–RD7</td><td style="color:var(--gray)">PORTD</td><td>LCD data bus 4 bits · gerenciado pela biblioteca Miyadaira</td></tr>
+          <tr><td>RE0</td><td style="color:var(--gray)">PORTE</td><td>LCD R/W</td></tr>
+          <tr><td>RE1</td><td style="color:var(--gray)">PORTE</td><td>LCD Enable</td></tr>
+          <tr><td>RE2</td><td style="color:var(--gray)">PORTE</td><td>LCD RS</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="background:var(--card);border-radius:8px;padding:10px 14px;font-size:.8rem;color:var(--gray)">
+      ⚠️ DIP Switches PICSimLab: Superior pos.9 (AN0) <strong style="color:var(--j)">ON</strong> · Inferior pos.1 (LCD) <strong style="color:var(--j)">ON</strong> · Todos os outros <strong style="color:var(--e)">OFF</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 5 — CONFIG BITS ══════════════ -->
+<div class="slide" data-cor="var(--j)">
+  <div class="bar" style="background:var(--j)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--j)">Config Bits + init_hardware()</h2></div>
+      <span class="speaker-tag" style="color:var(--j)">Juliano · Slide 5</span>
+    </div>
+    <div class="divider" style="background:var(--j)"></div>
+    <div class="grid2" style="flex:1;min-height:0">
+      <div class="col">
+        <pre>#pragma config FOSC   = HS         // cristal 20 MHz
+#pragma config CPUDIV = OSC1_PLL2  // CPU = Fosc sem PLL
+#pragma config WDT    = OFF        // watchdog off
+#pragma config PBADEN = OFF        // PORTB digital
+#pragma config LVP    = OFF        // sem LVP</pre>
+        <pre>void init_hardware(void) {
+    ADCON1 = 0x0F;  // PCFG=1111: tudo digital
+                    // (AN0 reabilitado em init_adc)
+    TRISB  = 0xFF;  // RB0-RB5 = entradas
+    INTCON2bits.RBPU = 0; // pull-ups ON
+
+    TRISDbits.TRISD0 = 0; // motor IN1
+    TRISDbits.TRISD1 = 0; // motor IN2
+    TRISDbits.TRISD2 = 0; // LED porta
+    LATD = 0x00;
+
+    TRISCbits.TRISC2 = 0; // RC2 = PWM
+    TRISAbits.TRISA0 = 1; // RA0 = ADC
+}</pre>
+      </div>
+      <div class="col">
+        <div class="card" style="border-left:3px solid var(--j)">
+          <h3 style="color:var(--j)">Por que FOSC = HS + CPUDIV?</h3>
+          <ul class="clean">
+            <li><strong>FOSC = HS</strong> — seleciona a <em>fonte</em>: cristal externo 20 MHz em modo alta velocidade</li>
+            <li><strong>CPUDIV = OSC1_PLL2</strong> — garante que o CPU use o oscilador direto (20 MHz), sem divisão pelo PLL</li>
+            <li>Sem CPUDIV explícito, o CPU poderia rodar em 10 ou 5 MHz e quebrar todos os cálculos de tempo</li>
+          </ul>
+        </div>
+        <div class="card" style="border-left:3px solid var(--j)">
+          <h3 style="color:var(--j)">Por que ADCON1 = 0x0F primeiro?</h3>
+          <ul class="clean">
+            <li>PCFG = 1111 desabilita <em>todos</em> os analógicos</li>
+            <li>Reset padrão deixa PORTB parcialmente analógico — leitura dos botões falharia</li>
+            <li>AN0 é reabilitado depois em <code style="color:#3FB950">init_adc()</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 6 — PWM ══════════════ -->
+<div class="slide" data-cor="var(--j)">
+  <div class="bar" style="background:var(--j)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--j)">PWM — 7 kHz e 38% Duty Cycle</h2></div>
+      <span class="speaker-tag" style="color:var(--j)">Juliano · Slide 6</span>
+    </div>
+    <div class="divider" style="background:var(--j)"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;flex:1;min-height:0">
+      <div class="formula-row"><span class="lbl">Fpwm =</span><span class="expr">Fosc ÷ (4 × Prescaler × (PR2 + 1))</span><span class="res">= 20M ÷ (4×4×179) = 6.983 Hz ≈ 7 kHz ✓</span></div>
+      <div class="formula-row"><span class="lbl">DC10bit =</span><span class="expr">int( 0,38 × 4 × (PR2 + 1) )</span><span class="res">= int( 0,38 × 716 ) = 272</span></div>
+      <div class="formula-row"><span class="lbl">CCPR1L =</span><span class="expr">DC10bit >> 2</span><span class="res">= 272 >> 2 = 68</span></div>
+      <div class="formula-row"><span class="lbl">DC1B =</span><span class="expr">DC10bit &amp; 0x03</span><span class="res">= 272 &amp; 3 = 0  →  CCP1CON = 0x0C</span></div>
+      <div class="formula-row"><span class="lbl">Duty real =</span><span class="expr">272 ÷ 716</span><span class="res">= 37,99% ≈ 38% ✓</span></div>
+      <pre style="flex:none">void init_pwm(void) {
+    OpenTimer2(TIMER_INT_OFF &amp; T2_PS_1_4 &amp; T2_POST_1_1); // prescaler 1:4
+    OpenPWM1(178);    // PR2 = 178  →  Fpwm ≈ 7 kHz
+    SetDCPWM1(0);     // inicia desligado
+}
+// Ligar motor (38%): SetDCPWM1(272);   |   Desligar: SetDCPWM1(0);</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 7 — TIMER0 ══════════════ -->
+<div class="slide" data-cor="var(--w)">
+  <div class="bar" style="background:var(--w)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--w)">Timer0 — Base de Tempo de 1 ms</h2></div>
+      <span class="speaker-tag" style="color:var(--w)">Willian · Slide 7</span>
+    </div>
+    <div class="divider" style="background:var(--w)"></div>
+    <div class="grid2" style="flex:1;min-height:0">
+      <div class="col">
+        <div style="display:flex;flex-direction:column;gap:7px;flex-shrink:0">
+          <div class="formula-row" style="grid-template-columns:140px 1fr"><span class="lbl">Fosc = 20 MHz</span><span class="expr">T_maq = 4 ÷ 20 MHz = 200 ns</span></div>
+          <div class="formula-row" style="grid-template-columns:140px 1fr"><span class="lbl">Prescaler 1:8</span><span class="expr">T_tick = 8 × 200 ns = 1,6 µs por tick</span></div>
+          <div class="formula-row" style="grid-template-columns:140px 1fr"><span class="lbl">Para 1 ms:</span><span class="expr">1.000 µs ÷ 1,6 µs = 625 ticks</span></div>
+          <div class="formula-row" style="grid-template-columns:140px 1fr"><span class="lbl">Recarga:</span><span class="expr" style="color:#3FB950;font-weight:700">65.536 − 625 = 64.911 = 0xFD8F</span></div>
+        </div>
+        <pre>// ISR — endereço 0x0008
+#pragma code int_alta = 0x0008
+void int_alta(void) { _asm GOTO ISR_T0 _endasm }
+#pragma code
+
+#pragma interrupt ISR_T0
+void ISR_T0(void) {
+    ms_tick++;          // +1 a cada 1 ms
+    TMR0H = 0xFD;       // recarga preload
+    TMR0L = 0x8F;
+    INTCONbits.TMR0IF = 0;
+}</pre>
+      </div>
+      <div class="col">
+        <div class="card" style="border-left:3px solid var(--w)">
+          <h3 style="color:var(--w)">ISR — o que é?</h3>
+          <p style="font-size:.85rem;line-height:1.5">Função executada automaticamente quando o Timer0 estoura. O programa principal <em>para</em>, a ISR roda (incrementa ms_tick), e o programa <em>volta</em> exatamente de onde parou. Dura microsegundos.</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--w)">
+          <h3 style="color:var(--w)">ms_tick na prática</h3>
+          <ul class="clean">
+            <li>Contador global incrementado pela ISR a cada 1 ms</li>
+            <li><code style="color:#3FB950">(ms_tick - t_inativo) >= 2300</code> = "passaram 2,3 s"</li>
+            <li><code style="color:#3FB950">(ms_tick - t_viagem) >= 3000</code> = "andou 1 andar"</li>
+            <li>Todas as contagens simultâneas — sem bloquear o loop</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 8 — ADC ══════════════ -->
+<div class="slide" data-cor="var(--k)">
+  <div class="bar" style="background:var(--k)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--k)">ADC — Potenciômetro Simulando Temperatura</h2></div>
+      <span class="speaker-tag" style="color:var(--k)">Karoline · Slide 8</span>
+    </div>
+    <div class="divider" style="background:var(--k)"></div>
+    <div class="grid2" style="flex:1;min-height:0">
+      <pre>void init_adc(void) {
+    // Tensão ref: VDD/VSS (VCFG = 00)
+    // PCFG = 1110: somente AN0 analógico
+    ADCON1 = 0x8E; // ADFM=1 (bit7) + PCFG=1110
+    //  ↑ PICSimLab usa PIC18F452:
+    //    ADCON2 não existe — ADFM fica em ADCON1[7]
+
+    ADCON0 = 0x01; // AN0 selecionado + ADON=1
+}
+
+unsigned int ler_adc(void) {
+    ADCON0 |= 0x04; // GO = bit2 (PIC18F452)
+    //  ↑ No PIC18F4550 seria bit1, mas no simulador é bit2
+    Delay10KTCYx(1);  // ~2 ms (ADIF não funciona no sim.)
+    return ((unsigned int)ADRESH &lt;&lt; 8) | ADRESL;
+}</pre>
+      <div class="col">
+        <div class="card" style="border-left:3px solid var(--k)">
+          <h3 style="color:var(--k)">Mapeamento → temperatura</h3>
+          <ul class="clean">
+            <li>ADC 10 bits: 0 a 1023 (0 V a 5 V)</li>
+            <li><code style="color:#3FB950">temp = adc × 50 / 1023</code> → graus inteiros</li>
+            <li><code style="color:#3FB950">temp_10 = adc × 500 / 1023</code> → décimos de grau</li>
+            <li>Ex: adc = 640 → temp_10 = 312 → <strong>31,2 °C</strong></li>
+            <li>Limiar STOP: 31 °C → adc ≈ 634</li>
+          </ul>
+        </div>
+        <div class="card" style="border-left:3px solid var(--k)">
+          <h3 style="color:var(--k)">Por que sem float?</h3>
+          <ul class="clean">
+            <li>C18 LITE tem limitações com ponto flutuante</li>
+            <li>Usar <code style="color:#3FB950">unsigned long</code> evita overflow de 16 bits nas multiplicações</li>
+            <li>temp_10 / 10 = parte inteira · temp_10 % 10 = decimal</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 9 — LCD ══════════════ -->
+<div class="slide" data-cor="var(--k)">
+  <div class="bar" style="background:var(--k)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--k)">LCD 2×16 — Biblioteca Miyadaira</h2></div>
+      <span class="speaker-tag" style="color:var(--k)">Karoline · Slide 9</span>
+    </div>
+    <div class="divider" style="background:var(--k)"></div>
+    <div class="grid2" style="flex:1;min-height:0">
+      <div style="min-height:0;overflow:auto">
+        <table>
+          <thead><tr><th>Função</th><th>Descrição</th></tr></thead>
+          <tbody>
+            <tr><td>lcd_inicia(c1,c2,c3)</td><td>Inicializa o display (modo, cursor, shift)</td></tr>
+            <tr><td>lcd_posicao(lin,col)</td><td>Posiciona cursor — 1-based</td></tr>
+            <tr><td>lcd_escreve_dado(b)</td><td>Escreve 1 byte no cursor atual</td></tr>
+            <tr><td>imprime_string_lcd(s)</td><td>Envia string da memória de programa</td></tr>
+            <tr><td>imprime_buffer_lcd(b,n)</td><td>Envia n bytes de um buffer RAM</td></tr>
+            <tr><td>lcd_envia_controle(...)</td><td>Comando bruto — usado para acessar CGRAM</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col">
+        <pre>// Inicialização usada no projeto
+lcd_inicia(0x28, 0x0F, 0x06);
+//  0x28 → 4 bits, 2 linhas, matriz 8×5
+//  0x0F → display ON + cursor piscante
+//  0x06 → cursor desloca para direita
+
+// Escrever na linha 1 coluna 1
+lcd_posicao(1, 1);
+sprintf(buf, "Andar: %d  ", andar_atual);
+imprime_buffer_lcd(buf, 10);</pre>
+        <div class="card" style="border-left:3px solid var(--k);flex:none">
+          <h3 style="color:var(--k)">Pinagem LCD</h3>
+          <p style="font-size:.82rem">Dados: RD4–RD7 · RS: RE2 · R/W: RE0 · Enable: RE1</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 10 — CGRAM ══════════════ -->
+<div class="slide" data-cor="var(--a)">
+  <div class="bar" style="background:var(--a)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--a)">CGRAM — Criando os Símbolos ↑ e ↓</h2></div>
+      <span class="speaker-tag" style="color:var(--a)">Ana Caroline · Slide 10</span>
+    </div>
+    <div class="divider" style="background:var(--a)"></div>
+    <div class="grid2" style="flex:1;min-height:0">
+      <div class="col" style="align-items:flex-start;gap:14px">
+        <p style="font-size:.85rem">HD44780 suporta até <strong>8 chars customizados</strong> de 5×8 pixels na CGRAM. Cada char = 8 bytes onde os 5 bits menos significativos definem os pixels.</p>
+        <div style="display:flex;gap:24px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:.75rem;color:var(--a);font-weight:700;margin-bottom:8px">↑ char 0 — slot 0x40</div>
+            <div id="bm-up" class="bitmap"></div>
+          </div>
+          <div>
+            <div style="font-size:.75rem;color:var(--a);font-weight:700;margin-bottom:8px">↓ char 1 — slot 0x48</div>
+            <div id="bm-dn" class="bitmap"></div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:var(--gray)">Exibir: <code style="color:#3FB950">lcd_escreve_dado(0x00)</code> = ↑ · <code style="color:#3FB950">lcd_escreve_dado(0x01)</code> = ↓</div>
+      </div>
+      <pre>const unsigned char CIMA[8]  =
+    {0x04,0x0E,0x1F,0x04,0x04,0x04,0x04,0x00};
+const unsigned char BAIXO[8] =
+    {0x04,0x04,0x04,0x04,0x1F,0x0E,0x04,0x00};
+
+void carregar_chars(void) {
+    unsigned char i;
+    // aponta cursor para char 0 na CGRAM
+    lcd_envia_controle(0, 0, 0x40, 45);
+    for (i=0; i&lt;8; i++) lcd_escreve_dado(CIMA[i]);
+
+    // aponta para char 1
+    lcd_envia_controle(0, 0, 0x48, 45);
+    for (i=0; i&lt;8; i++) lcd_escreve_dado(BAIXO[i]);
+
+    // volta cursor para DDRAM (tela)
+    lcd_posicao(1, 1);
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 11 — BOTÕES ══════════════ -->
+<div class="slide" data-cor="var(--a)">
+  <div class="bar" style="background:var(--a)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--a)">Botões — ler_botoes() com Debounce 20 ms</h2></div>
+      <span class="speaker-tag" style="color:var(--a)">Ana Caroline · Slide 11</span>
+    </div>
+    <div class="divider" style="background:var(--a)"></div>
+    <div class="grid2" style="flex:1;min-height:0">
+      <pre>static unsigned long t_deb[7] = {0};
+
+void ler_botoes(void) {
+    unsigned char i, portb;
+    portb = PORTB; // snapshot do porto inteiro
+
+    for (i = 1; i &lt;= TOTAL_ANDARES; i++) {
+        // pull-up ativo: botão LOW = pressionado
+        if (!(portb &amp; (1 &lt;&lt; (i-1)))) {
+            // debounce: só aceita após 20 ms
+            if ((ms_tick - t_deb[i]) &gt;= 20) {
+                t_deb[i] = ms_tick;
+                if (i != (unsigned char)andar_atual) {
+                    fila[i]   = 1;
+                    t_inativo = ms_tick;
+                }
+            }
+        }
+    }
+}</pre>
+      <div class="col">
+        <div class="card" style="border-left:3px solid var(--a)">
+          <h3 style="color:var(--a)">O que é bouncing?</h3>
+          <p style="font-size:.85rem;line-height:1.5">Contato mecânico oscila 5–20 ms ao ser pressionado. Sem tratamento, 1 toque = vários acionamentos.</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--a)">
+          <h3 style="color:var(--a)">Solução: debounce por tempo</h3>
+          <ul class="clean">
+            <li><code style="color:#3FB950">t_deb[i]</code> = timestamp do último toque aceito por andar</li>
+            <li>Aceita novo toque só se <code style="color:#3FB950">(ms_tick − t_deb[i]) ≥ 20</code></li>
+            <li>Lemos PORTB inteiro de uma vez (snapshot consistente)</li>
+            <li>Lógica invertida: bit = 0 → botão ativo (pull-up)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 12 — ESTADOS VISÃO GERAL ══════════════ -->
+<div class="slide" data-cor="var(--a)">
+  <div class="bar" style="background:var(--a)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--a)">Máquina de Estados — Visão Geral</h2></div>
+      <span class="speaker-tag" style="color:var(--a)">Ana Caroline · Slide 12</span>
+    </div>
+    <div class="divider" style="background:var(--a)"></div>
+    <div class="states" style="flex:1;min-height:0">
+      <div class="state-box" style="border-top:3px solid var(--e)">
+        <div class="sname" style="color:var(--e)">IDLE</div>
+        <p>Motor parado · aguarda botão ou timeout de 2,3 s · verifica temp</p>
+      </div>
+      <div class="state-box" style="border-top:3px solid var(--w)">
+        <div class="sname" style="color:var(--w)">MOVENDO</div>
+        <p>Motor ligado · avança 1 andar a cada 3 s via ms_tick · algoritmo SCAN</p>
+      </div>
+      <div class="state-box" style="border-top:3px solid var(--k)">
+        <div class="sname" style="color:var(--k)">RETORNANDO</div>
+        <p>Igual MOVENDO · destino fixo = 3º andar · disparado por inatividade</p>
+      </div>
+      <div class="state-box" style="border-top:3px solid var(--a)">
+        <div class="sname" style="color:var(--a)">PORTA_ABERTA</div>
+        <p>Motor parado · 4 fases de 1 s · LED apaga aos 2 s (fechando)</p>
+      </div>
+      <div class="state-box" style="border-top:3px solid var(--e)">
+        <div class="sname" style="color:var(--e)">SUPERAQUECIDO</div>
+        <p>Motor para imediatamente · temp &gt; 31 °C · retoma viagem ao normalizar</p>
+      </div>
+    </div>
+    <div style="background:var(--card);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--gray);font-family:Consolas,monospace;text-align:center">
+      Loop principal: ler_adc() → ler_botoes() → maquina_estados() → atualizar_lcd()
+      <br>Qualquer estado de movimento: se temp &gt; 31 °C → SUPERAQUECIDO instantâneo
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 13 — IDLE E MOVENDO ══════════════ -->
+<div class="slide" data-cor="var(--e)">
+  <div class="bar" style="background:var(--e)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--e)">Estados IDLE e MOVENDO / RETORNANDO</h2></div>
+      <span class="speaker-tag" style="color:var(--e)">Erick · Slide 13</span>
+    </div>
+    <div class="divider" style="background:var(--e)"></div>
+    <div class="grid2" style="flex:1;min-height:0">
+      <pre>case IDLE:
+    motor_desliga();
+    if (temp > TEMP_MAX) {
+        estado = SUPERAQUECIDO; break;
+    }
+    // algoritmo SCAN: prioriza direção atual
+    andar_destino = proximo_fila();
+    if (andar_destino != 0) {
+        definir_direcao();
+        motor_liga();
+        t_viagem = t_inativo = ms_tick;
+        estado = MOVENDO;
+        break;
+    }
+    // 2,3 s sem chamada → volta ao 3º
+    if ((ms_tick - t_inativo) >= 2300UL
+            && andar_atual != ANDAR_HOME) {
+        andar_destino = ANDAR_HOME;
+        definir_direcao(); motor_liga();
+        t_viagem = t_inativo = ms_tick;
+        estado = RETORNANDO;
+    }
+    break;</pre>
+      <pre>case MOVENDO:
+case RETORNANDO:
+    if (temp > TEMP_MAX) {
+        motor_desliga();
+        estado = SUPERAQUECIDO; break;
+    }
+    // avança 1 andar a cada 3 s
+    if ((ms_tick - t_viagem) >= TEMPO_POR_ANDAR) {
+        t_viagem = ms_tick;
+        if (direcao == SUBINDO)  andar_atual++;
+        if (direcao == DESCENDO) andar_atual--;
+
+        if (andar_atual == andar_destino) {
+            fila[andar_destino] = 0;
+            motor_desliga();
+            porta_abre();
+            t_porta = ms_tick;
+            estado = PORTA_ABERTA;
+        }
+    }
+    break;</pre>
+    </div>
+    <div style="font-size:.78rem;color:var(--gray);background:var(--card);padding:8px 14px;border-radius:6px"><strong style="color:var(--e)">proximo_fila():</strong> algoritmo SCAN — procura próximo andar na direção atual; só inverte quando não há mais chamadas nessa direção</div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 14 — PORTA + SUPER ══════════════ -->
+<div class="slide" data-cor="var(--e)">
+  <div class="bar" style="background:var(--e)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--e)">Estados PORTA_ABERTA e SUPERAQUECIDO</h2></div>
+      <span class="speaker-tag" style="color:var(--e)">Erick · Slide 14</span>
+    </div>
+    <div class="divider" style="background:var(--e)"></div>
+    <div class="grid2" style="flex:1;min-height:0">
+      <pre>case PORTA_ABERTA:
+    // 4 fases de 1 s controladas por t_porta
+    if ((ms_tick - t_porta) >= TEMPO_PORTA) {
+        porta_fecha();
+        t_inativo = ms_tick;
+        estado = IDLE;
+    }
+    break;
+
+case SUPERAQUECIDO:
+    motor_desliga();
+    direcao = PARADO; // LCD mostra STOP (não ↑/↓)
+    if (temp <= TEMP_MAX) {
+        t_inativo = ms_tick;
+        if (andar_destino != 0
+                && andar_destino != andar_atual) {
+            definir_direcao(); motor_liga();
+            t_viagem = ms_tick;
+            estado = MOVENDO; // retoma viagem
+        } else {
+            estado = IDLE;
+        }
+    }
+    break;</pre>
+      <div class="col">
+        <div class="card" style="border-left:3px solid var(--e)">
+          <h3 style="color:var(--e)">Fases da porta (TEMPO_PORTA = 4 s)</h3>
+          <table style="font-size:.8rem">
+            <tr><td>0–1 s</td><td style="color:var(--white);font-family:inherit">Abrindo porta</td></tr>
+            <tr><td>1–2 s</td><td style="color:var(--white);font-family:inherit">Porta aberta!</td></tr>
+            <tr><td>2–3 s</td><td style="color:var(--white);font-family:inherit">Fechando porta <span style="color:var(--e)">(LED apaga)</span></td></tr>
+            <tr><td>3–4 s</td><td style="color:var(--white);font-family:inherit">Porta fechada</td></tr>
+          </table>
+        </div>
+        <pre style="flex:none;font-size:.72rem">void motor_liga(void) {
+    if (direcao == SUBINDO)
+        { MOTOR_IN1=1; MOTOR_IN2=0; }
+    else
+        { MOTOR_IN1=0; MOTOR_IN2=1; }
+    SetDCPWM1(272); // 38%
+}
+void motor_desliga(void) {
+    SetDCPWM1(0);
+    MOTOR_IN1=MOTOR_IN2=0;
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 15 — ATUALIZAR LCD ══════════════ -->
+<div class="slide" data-cor="var(--e)">
+  <div class="bar" style="background:var(--e)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--e)">atualizar_lcd() — Display em Tempo Real</h2></div>
+      <span class="speaker-tag" style="color:var(--e)">Erick · Slide 15</span>
+    </div>
+    <div class="divider" style="background:var(--e)"></div>
+    <div class="grid2" style="flex:1;min-height:0">
+      <pre>void atualizar_lcd(void) {
+    char buf[18];
+    // temperatura sem float
+    unsigned int temp_10 =
+        (unsigned int)((unsigned long)adc_raw
+                        * 500UL / 1023UL);
+
+    // ── Linha 1: "Andar: X  [dir]" ──
+    lcd_posicao(1, 1);
+    sprintf(buf, "Andar: %d  ", andar_atual);
+    imprime_buffer_lcd(buf, 10); // 10 chars
+
+    if (estado == SUPERAQUECIDO)
+        imprime_string_lcd("STOP  ");
+    else if (direcao == SUBINDO)
+        { lcd_escreve_dado(0x00);        // ↑ CGRAM
+          imprime_string_lcd("     "); }
+    else if (direcao == DESCENDO)
+        { lcd_escreve_dado(0x01);        // ↓ CGRAM
+          imprime_string_lcd("     "); }
+    else imprime_string_lcd("      ");
+
+    // ── Linha 2: "Tmp: XX.X C" ──
+    lcd_posicao(2, 1);
+    sprintf(buf, "Tmp: %u.%uC       ",
+            temp_10/10, temp_10%10);
+    imprime_buffer_lcd(buf, 16); // 16 chars fixos
+}</pre>
+      <div class="col">
+        <div class="card" style="border-left:3px solid var(--e)">
+          <h3 style="color:var(--e)">Por que 16 chars fixos?</h3>
+          <p style="font-size:.85rem;line-height:1.5">O LCD não apaga sozinho — espaços de preenchimento sobrescrevem caracteres anteriores. Sem isso, "STOP" deixaria restos de "↑" na tela.</p>
+        </div>
+        <div>
+          <div style="font-size:.75rem;color:var(--gray);margin-bottom:6px">Mock do LCD — situação normal</div>
+          <div class="lcd">Andar: 3  ↑     <br>Tmp: 28.5C      </div>
+        </div>
+        <div>
+          <div style="font-size:.75rem;color:var(--gray);margin-bottom:6px">Mock do LCD — superaquecido</div>
+          <div class="lcd" style="border-color:var(--e);color:var(--e)">Andar: 2  STOP  <br>Tmp: 34.7C      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SLIDE 16 — CONCLUSÃO ══════════════ -->
+<div class="slide" data-cor="var(--w)">
+  <div class="bar" style="background:var(--w)"></div>
+  <div class="slide-inner">
+    <div class="speaker-row">
+      <div><h2 style="color:var(--w)">Conclusão</h2><div class="sub">O que foi implementado</div></div>
+      <span class="speaker-tag" style="color:var(--w)">Willian · Slide 16</span>
+    </div>
+    <div class="divider" style="background:var(--w)"></div>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:10px;min-height:0">
+      <div class="card-sm" style="border-left:3px solid var(--w)"><div style="font-size:.72rem;color:var(--w);font-weight:700;margin-bottom:4px">✔ TIMER0 ISR</div><div style="font-size:.85rem">Base de 1 ms não-bloqueante para todas as contagens simultâneas</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--j)"><div style="font-size:.72rem;color:var(--j);font-weight:700;margin-bottom:4px">✔ PWM CCP1</div><div style="font-size:.85rem">6.983 Hz ≈ 7 kHz · 38% duty cycle calculado analiticamente</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--k)"><div style="font-size:.72rem;color:var(--k);font-weight:700;margin-bottom:4px">✔ ADC AN0</div><div style="font-size:.85rem">Lê potenciômetro · mapeia 0–50 °C · aritmética inteira sem float</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--k)"><div style="font-size:.72rem;color:var(--k);font-weight:700;margin-bottom:4px">✔ LCD 4 BITS + CGRAM</div><div style="font-size:.85rem">Biblioteca Miyadaira · símbolos ↑↓ customizados em 5×8 pixels</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--a)"><div style="font-size:.72rem;color:var(--a);font-weight:700;margin-bottom:4px">✔ MÁQUINA SCAN — 5 ESTADOS</div><div style="font-size:.85rem">Lógica não-bloqueante · algoritmo SCAN · retorno automático ao 3º andar</div></div>
+      <div class="card-sm" style="border-left:3px solid var(--e)"><div style="font-size:.72rem;color:var(--e);font-weight:700;margin-bottom:4px">✔ DEBOUNCE 20 ms</div><div style="font-size:.85rem">Leitura confiável dos 6 botões · array de timestamps por andar</div></div>
+    </div>
+    <div class="grid5">
+      <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center;border-top:2px solid var(--w)"><div style="font-size:.65rem;color:var(--w);font-weight:700">Willian</div><div style="font-size:.65rem;color:var(--gray)">1869027</div></div>
+      <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center;border-top:2px solid var(--j)"><div style="font-size:.65rem;color:var(--j);font-weight:700">Juliano</div><div style="font-size:.65rem;color:var(--gray)">2041952</div></div>
+      <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center;border-top:2px solid var(--k)"><div style="font-size:.65rem;color:var(--k);font-weight:700">Karoline</div><div style="font-size:.65rem;color:var(--gray)">2578000</div></div>
+      <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center;border-top:2px solid var(--a)"><div style="font-size:.65rem;color:var(--a);font-weight:700">Ana Caroline</div><div style="font-size:.65rem;color:var(--gray)">2486024</div></div>
+      <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center;border-top:2px solid var(--e)"><div style="font-size:.65rem;color:var(--e);font-weight:700">Erick</div><div style="font-size:.65rem;color:var(--gray)">2301105</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<script>
+// ── BITMAP CGRAM ──
+const UP  = [0x04,0x0E,0x1F,0x04,0x04,0x04,0x04,0x00];
+const DN  = [0x04,0x04,0x04,0x04,0x1F,0x0E,0x04,0x00];
+function renderBitmap(id, bytes){
+  const el = document.getElementById(id);
+  if(!el) return;
+  bytes.forEach(b=>{
+    for(let c=4;c>=0;c--){
+      const d = document.createElement('div');
+      d.className = 'bit ' + ((b>>c)&1 ? 'on' : 'off');
+      el.appendChild(d);
+    }
+  });
+}
+renderBitmap('bm-up', UP);
+renderBitmap('bm-dn', DN);
+
+// ── NAVIGATION ──
+const slides = Array.from(document.querySelectorAll('.slide'));
+let cur = 0;
+const total = slides.length;
+let touchX = 0;
+
+function show(n){
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('prev');
+  setTimeout(()=>slides[cur].classList.remove('prev'), 400);
+  cur = Math.max(0, Math.min(n, total-1));
+  slides[cur].classList.add('active');
+  document.getElementById('slide-counter').textContent = `${cur+1} / ${total}`;
+  document.getElementById('progress').style.width = `${(cur+1)/total*100}%`;
+}
+
+function go(dir){ show(cur+dir); }
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='ArrowDown') { e.preventDefault(); go(1); }
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') { e.preventDefault(); go(-1); }
+  if(e.key==='f'||e.key==='F') toggleFS();
+  if(e.key>='1'&&e.key<='9') show(parseInt(e.key)-1);
+  if(e.key==='0') show(9);
+});
+
+document.addEventListener('touchstart', e=>{ touchX = e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', e=>{
+  const dx = e.changedTouches[0].clientX - touchX;
+  if(Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+}, {passive:true});
+
+// ── FULLSCREEN ──
+function toggleFS(){
+  if(!document.fullscreenElement)
+    document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+
+// init progress
+document.getElementById('progress').style.width = `${1/total*100}%`;
+</script>
+</body>
+</html>
