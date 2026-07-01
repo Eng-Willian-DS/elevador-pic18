@@ -191,7 +191,7 @@ tr:last-child td{border:none}
   .slide-inner{
     flex:none!important;height:auto!important;
     min-height:calc(100% - 4px);overflow:visible!important;
-    padding:8px 14px 60px;gap:8px
+    padding:8px 14px 80px;gap:8px
   }
   .grid2,.grid3,.grid5,.states,.col,.card,.card-sm,pre,.state-box,.xpl-body{
     flex:none!important;height:auto!important;min-height:0!important;overflow:visible!important
@@ -221,7 +221,7 @@ tr:last-child td{border:none}
     height:auto!important;
     min-height:calc(100% - 4px);
     overflow:visible!important;
-    padding:10px 12px 70px;
+    padding:10px 12px 90px;
     gap:10px
   }
 
@@ -281,8 +281,10 @@ tr:last-child td{border:none}
   .lcd{font-size:.72rem;padding:6px 8px}
 
   /* Controles */
-  #nav button{padding:10px 18px;font-size:1rem}
-  #fs-btn{padding:6px 10px;font-size:.7rem}
+  #nav{background:rgba(13,17,23,.85);border-radius:8px;padding:4px 6px;bottom:8px}
+  #nav button{padding:10px 20px;font-size:1.1rem}
+  #slide-counter{font-size:.8rem}
+  #fs-btn{padding:6px 10px;font-size:.7rem;top:8px;right:8px}
   .bar{height:4px}
 }
 </style>
@@ -560,15 +562,17 @@ void ISR_T0(void) {
       <div class="col">
         <div class="card" style="border-left:3px solid var(--w)">
           <h3 style="color:var(--w)">4 temporizações rodando ao mesmo tempo</h3>
-          <table style="font-size:.78rem;margin-top:4px">
+          <div style="overflow-x:auto">
+          <table style="font-size:.78rem;margin-top:4px;min-width:340px">
             <thead><tr><th>Variável</th><th>Condição</th><th>Uso</th></tr></thead>
             <tbody>
-              <tr><td>t_inativo</td><td style="font-family:inherit;color:#3FB950">≥ 2300 ms</td><td style="font-family:inherit">Retorno ao 3º andar</td></tr>
-              <tr><td>t_viagem</td><td style="font-family:inherit;color:#3FB950">≥ 3000 ms</td><td style="font-family:inherit">Avança 1 andar</td></tr>
-              <tr><td>t_porta</td><td style="font-family:inherit;color:#3FB950">≥ 4000 ms</td><td style="font-family:inherit">Ciclo completo da porta</td></tr>
-              <tr><td>t_deb[i]</td><td style="font-family:inherit;color:#3FB950">≥ 20 ms</td><td style="font-family:inherit">Debounce de cada botão</td></tr>
+              <tr><td>t_inativo</td><td style="font-family:inherit;color:#3FB950;white-space:nowrap">≥ 2300 ms</td><td style="font-family:inherit;white-space:nowrap">Retorno ao 3º andar</td></tr>
+              <tr><td>t_viagem</td><td style="font-family:inherit;color:#3FB950;white-space:nowrap">≥ 3000 ms</td><td style="font-family:inherit;white-space:nowrap">Avança 1 andar</td></tr>
+              <tr><td>t_porta</td><td style="font-family:inherit;color:#3FB950;white-space:nowrap">≥ 4000 ms</td><td style="font-family:inherit;white-space:nowrap">Ciclo completo da porta</td></tr>
+              <tr><td>t_deb[i]</td><td style="font-family:inherit;color:#3FB950;white-space:nowrap">≥ 20 ms</td><td style="font-family:inherit;white-space:nowrap">Debounce de cada botão</td></tr>
             </tbody>
           </table>
+          </div>
           <p style="font-size:.75rem;color:var(--gray);margin-top:6px">Todas calculadas com <code style="color:#3FB950">(ms_tick - t_X)</code> — sem delay, sem bloquear o loop.</p>
         </div>
         <pre style="flex:none;font-size:.72rem">// Inicialização do Timer0
