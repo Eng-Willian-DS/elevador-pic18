@@ -42,10 +42,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .gloss-pill .gdef{font-size:.75rem;color:#C9D1D9;line-height:1.45}
 
 /* ── QR CODE ── */
-.qr-widget{position:absolute;bottom:14px;right:16px;background:var(--card);border-radius:10px;
-  padding:10px;border:1px solid #30363D;text-align:center;z-index:10}
+.qr-widget{position:absolute;top:8px;left:16px;background:#0D1117;border-radius:12px;
+  padding:12px;border:2px solid #F6C212;text-align:center;z-index:10;
+  box-shadow:0 0 24px rgba(246,194,18,.4)}
 .qr-widget canvas{display:block;border-radius:6px}
-.qr-widget .qr-label{font-size:.58rem;color:var(--gray);margin-top:5px;letter-spacing:.3px}
+.qr-widget .qr-label{font-size:.62rem;color:#F6C212;margin-top:7px;font-weight:700;letter-spacing:.5px}
+.qr-widget .qr-scan{font-size:.58rem;color:var(--gray);margin-top:2px}
 
 /* ── HEADER BAR ── */
 .bar{height:6px;width:100%;flex-shrink:0}
@@ -158,10 +160,11 @@ tr:last-child td{border:none}
   <div class="bar" style="background:linear-gradient(90deg,var(--w),var(--j),var(--k),var(--a),var(--e));height:5px"></div>
   <div class="slide-inner" style="justify-content:center;gap:18px;position:relative">
 
-    <!-- QR code fixo no canto -->
+    <!-- QR code topo esquerdo -->
     <div class="qr-widget">
       <canvas id="qr-capa"></canvas>
-      <div class="qr-label">microcontroladores.airqs.com.br</div>
+      <div class="qr-label">📱 Acesse o projeto</div>
+      <div class="qr-scan">microcontroladores.airqs.com.br</div>
     </div>
 
     <!-- logo + disciplina -->
@@ -924,7 +927,8 @@ void motor_desliga(void) {
     <!-- QR code no slide de conclusão -->
     <div class="qr-widget">
       <canvas id="qr-conclusao"></canvas>
-      <div class="qr-label">microcontroladores.airqs.com.br</div>
+      <div class="qr-label">📱 Acesse o projeto</div>
+      <div class="qr-scan">microcontroladores.airqs.com.br</div>
     </div>
     <div class="speaker-row">
       <div><h2 style="color:var(--w)">Conclusão</h2><div class="sub">O que foi implementado</div></div>
@@ -952,14 +956,17 @@ void motor_desliga(void) {
 </div><!-- /deck -->
 
 <script>
-// ── QR CODES ──
-const QR_URL = 'https://microcontroladores.airqs.com.br';
-const QR_OPTS = { width:130, margin:1, color:{dark:'#E6EDF3', light:'#161B22'} };
-['qr-capa','qr-conclusao'].forEach(id=>{
-  const el = document.getElementById(id);
-  if(el && typeof QRCode !== 'undefined')
-    QRCode.toCanvas(el, QR_URL, QR_OPTS, ()=>{});
-});
+// ── QR CODES — aguarda biblioteca CDN carregar ──
+function initQR(){
+  if(typeof QRCode === 'undefined'){ setTimeout(initQR, 80); return; }
+  const QR_URL  = 'https://microcontroladores.airqs.com.br';
+  const QR_OPTS = { width:190, margin:1, color:{ dark:'#F6C212', light:'#0D1117' } };
+  ['qr-capa','qr-conclusao'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) QRCode.toCanvas(el, QR_URL, QR_OPTS, ()=>{});
+  });
+}
+initQR();
 
 // ── LOGO WATERMARK em todos os slides exceto slide 1 ──
 document.querySelectorAll('.slide:not(:first-child)').forEach(s=>{
