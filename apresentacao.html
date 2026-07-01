@@ -2,7 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Central para Elevador — PIC18F4550</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -122,8 +124,8 @@ tr:last-child td{border:none}
 #progress{position:fixed;bottom:0;left:0;height:3px;background:var(--accent);transition:width .3s ease;z-index:100}
 
 /* ── NAV ── */
-#nav{position:fixed;bottom:10px;right:16px;display:flex;align-items:center;gap:10px;z-index:100;opacity:.6;font-size:.72rem;color:var(--gray)}
-#nav button{background:var(--card);border:none;color:var(--gray);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.75rem}
+#nav{position:fixed;bottom:10px;right:16px;display:flex;align-items:center;gap:10px;z-index:100;opacity:.7;font-size:.72rem;color:var(--gray)}
+#nav button{background:var(--card);border:none;color:var(--gray);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:1rem;min-width:44px;min-height:44px;touch-action:manipulation}
 #nav button:hover{color:var(--white)}
 #slide-counter{min-width:40px;text-align:center}
 
@@ -135,12 +137,72 @@ tr:last-child td{border:none}
 /* ── DIVIDER LINE ── */
 .divider{height:2px;border-radius:2px;flex-shrink:0}
 
-/* ── RESPONSIVO ── */
-@media(max-width:700px){
+/* ── TABLET (≤1024px) ── */
+@media(max-width:1024px){
+  .slide-inner{padding:16px 20px;gap:12px}
+  .logo-box img{height:80px}
+  .logo-box{padding:10px 20px}
+  #qr-fixed img{width:200px!important;height:200px!important}
+  .grid5{grid-template-columns:repeat(3,1fr)}
+  .states{grid-template-columns:repeat(3,1fr)}
+  h1{font-size:clamp(1.4rem,4vw,2.4rem)}
+}
+
+/* ── MOBILE LANDSCAPE / TABLET PEQUENO (≤768px) ── */
+@media(max-width:768px){
+  .slide-inner{padding:12px 14px;gap:10px}
+  .logo-box img{height:56px}
+  .logo-box{padding:8px 16px}
+  #qr-fixed img{width:150px!important;height:150px!important}
+  #qr-fixed{padding:8px}
   .grid2,.grid3{grid-template-columns:1fr}
-  .grid5,.states{grid-template-columns:repeat(2,1fr)}
-  pre{font-size:.62rem}
-  h1{font-size:1.4rem}
+  .grid5{grid-template-columns:repeat(2,1fr)}
+  .states{grid-template-columns:repeat(2,1fr)}
+  .formula-row{grid-template-columns:110px 1fr;font-size:.72rem}
+  .formula-row .res{display:none}
+  pre{font-size:.6rem}
+  h1{font-size:1.3rem}
+  h2{font-size:1rem}
+  .gloss-strip{flex-direction:column}
+  .gloss-pill .gdef{font-size:.72rem}
+  .speaker-tag{font-size:.6rem}
+}
+
+/* ── MOBILE RETRATO (≤480px) ── */
+@media(max-width:480px){
+  .slide-inner{padding:8px 10px;gap:8px;overflow-y:auto}
+  .logo-box img{height:42px}
+  .logo-box{padding:6px 12px}
+  #qr-fixed img{width:110px!important;height:110px!important}
+  #qr-fixed{padding:6px;top:8px;left:8px}
+  #qr-fixed .qr-url{font-size:.5rem}
+  .grid2,.grid3,.grid5{grid-template-columns:1fr}
+  .states{grid-template-columns:1fr 1fr}
+  .formula-row{display:flex;flex-direction:column;gap:3px;font-size:.68rem}
+  .formula-row .lbl{font-weight:800}
+  .formula-row .res{display:block;color:#3FB950}
+  pre{font-size:.55rem;max-height:30vh}
+  table{font-size:.62rem}
+  th,td{padding:4px 6px}
+  h1{font-size:1rem}
+  h2{font-size:.88rem}
+  .sub{font-size:.75rem}
+  .gloss-strip{flex-direction:column}
+  .gloss-pill{padding:6px 8px}
+  .gloss-pill .gterm{font-size:.6rem}
+  .gloss-pill .gdef{font-size:.68rem}
+  .bitmap{grid-template-columns:repeat(5,16px)}
+  .bit{width:16px;height:16px}
+  .member-card .nome{font-size:.6rem;padding:6px 4px 2px}
+  .member-card .ra{font-size:.6rem}
+  .card{padding:8px 10px}
+  .card h3{font-size:.7rem}
+  ul.clean li{font-size:.75rem;gap:5px}
+  .lcd{font-size:.72rem;padding:6px 8px}
+  .speaker-tag{display:none}
+  #nav button{padding:8px 16px;font-size:.9rem}
+  #fs-btn{padding:6px 10px;font-size:.7rem}
+  .bar{height:4px}
 }
 </style>
 </head>
