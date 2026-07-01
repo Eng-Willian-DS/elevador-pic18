@@ -515,8 +515,8 @@ void int_alta(void) { _asm GOTO ISR_T0 _endasm }
 #pragma interrupt ISR_T0
 void ISR_T0(void) {
     ms_tick++;          // +1 a cada 1 ms
-    TMR0H = 0xFD;       // recarga preload
-    TMR0L = 0x8F;
+    TMR0H = 0xFD;       // 253 decimal — byte alto de 0xFD8F
+    TMR0L = 0x8F;       // 143 decimal — byte baixo de 0xFD8F = 64.911
     INTCONbits.TMR0IF = 0;
 }</pre>
       </div>
@@ -535,8 +535,9 @@ void ISR_T0(void) {
           <p style="font-size:.75rem;color:var(--gray);margin-top:6px">Todas calculadas com <code style="color:#3FB950">(ms_tick - t_X)</code> — sem delay, sem bloquear o loop.</p>
         </div>
         <pre style="flex:none;font-size:.72rem">// Inicialização do Timer0
-T0CON = 0b10000010; // ON | 16-bit | clk interno | psc 1:8
-TMR0H = 0xFD; TMR0L = 0x8F; // preload 64.911
+T0CON = 0b10000010; // = 130 decimal | ON | 16-bit | clk interno | psc 1:8
+TMR0H = 0xFD;       // = 253 decimal | byte alto do preload
+TMR0L = 0x8F;       // = 143 decimal | byte baixo  →  0xFD8F = 64.911 decimal
 INTCONbits.TMR0IE = 1; INTCONbits.GIE = 1;</pre>
       </div>
     </div>
