@@ -41,14 +41,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .gloss-pill .gterm{display:block;font-size:.68rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px}
 .gloss-pill .gdef{font-size:.75rem;color:#C9D1D9;line-height:1.45}
 
-/* ── QR CODE ── */
-.qr-widget{position:absolute;top:8px;left:16px;background:#fff;border-radius:12px;
-  padding:10px;border:3px solid #F6C212;text-align:center;z-index:10;
-  box-shadow:0 0 28px rgba(246,194,18,.45)}
-.qr-widget>div{display:block!important}
-.qr-widget img,.qr-widget canvas{display:block!important;border-radius:4px}
-.qr-widget .qr-label{font-size:.65rem;color:#0D1117;margin-top:6px;font-weight:800;letter-spacing:.3px}
-.qr-widget .qr-scan{font-size:.55rem;color:#555;margin-top:2px}
+/* ── QR CODE FIXO (fora dos slides, não afeta layout) ── */
+#qr-fixed{position:fixed;bottom:18px;left:18px;background:#fff;border-radius:10px;
+  padding:8px;border:3px solid #F6C212;z-index:200;
+  box-shadow:0 0 24px rgba(246,194,18,.5);line-height:0}
+#qr-fixed img{display:block!important;border-radius:4px;width:160px!important;height:160px!important}
+#qr-fixed canvas{display:none!important}
+#qr-fixed .qr-url{font-size:.52rem;color:#333;text-align:center;margin-top:5px;
+  line-height:1.2;font-weight:600;letter-spacing:.2px}
 
 /* ── HEADER BAR ── */
 .bar{height:6px;width:100%;flex-shrink:0}
@@ -159,14 +159,7 @@ tr:last-child td{border:none}
 <!-- ══════════════ SLIDE 1 — CAPA ══════════════ -->
 <div class="slide active" data-cor="var(--w)">
   <div class="bar" style="background:linear-gradient(90deg,var(--w),var(--j),var(--k),var(--a),var(--e));height:5px"></div>
-  <div class="slide-inner" style="justify-content:center;gap:18px;position:relative;padding-left:230px">
-
-    <!-- QR code topo esquerdo -->
-    <div class="qr-widget">
-      <div id="qr-capa"></div>
-      <div class="qr-label">📱 Acesse o projeto</div>
-      <div class="qr-scan">microcontroladores.airqs.com.br</div>
-    </div>
+  <div class="slide-inner" style="justify-content:center;gap:18px;position:relative">
 
     <!-- logo + disciplina -->
     <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap">
@@ -925,12 +918,6 @@ void motor_desliga(void) {
 <div class="slide" data-cor="var(--w)">
   <div class="bar" style="background:linear-gradient(90deg,var(--w),var(--j),var(--k),var(--a),var(--e));height:5px"></div>
   <div class="slide-inner">
-    <!-- QR code no slide de conclusão -->
-    <div class="qr-widget">
-      <div id="qr-conclusao"></div>
-      <div class="qr-label">📱 Acesse o projeto</div>
-      <div class="qr-scan">microcontroladores.airqs.com.br</div>
-    </div>
     <div class="speaker-row">
       <div><h2 style="color:var(--w)">Conclusão</h2><div class="sub">O que foi implementado</div></div>
       <span class="speaker-tag" style="color:var(--w)">Willian · Slide 16</span>
@@ -956,23 +943,27 @@ void motor_desliga(void) {
 
 </div><!-- /deck -->
 
+<!-- QR fixo — aparece em todos os slides, nunca afeta layout -->
+<div id="qr-fixed">
+  <div id="qr-box"></div>
+  <div class="qr-url">microcontroladores.airqs.com.br</div>
+</div>
+
 <script>
-// ── QR CODES — aguarda qrcodejs (cdnjs) carregar ──
+// ── QR CODE único fixo — aguarda qrcodejs (cdnjs) ──
 function initQR(){
   if(typeof QRCode === 'undefined'){ setTimeout(initQR, 80); return; }
-  ['qr-capa','qr-conclusao'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el && !el._qr){
-      el._qr = new QRCode(el, {
-        text      : 'https://microcontroladores.airqs.com.br',
-        width     : 180,
-        height    : 180,
-        colorDark : '#000000',
-        colorLight: '#FFFFFF',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    }
-  });
+  const el = document.getElementById('qr-box');
+  if(el && !el._qr){
+    el._qr = new QRCode(el, {
+      text        : 'https://microcontroladores.airqs.com.br',
+      width       : 160,
+      height      : 160,
+      colorDark   : '#000000',
+      colorLight  : '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
 }
 initQR();
 
