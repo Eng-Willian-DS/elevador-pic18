@@ -168,6 +168,30 @@ tr:last-child td{border:none}
   .speaker-tag{font-size:.6rem}
 }
 
+/* ── MOBILE LANDSCAPE (altura pequena) ── */
+@media(max-height:500px){
+  #qr-fixed{display:none!important}
+  .slide{overflow-y:auto!important;overflow-x:hidden}
+  .slide-inner{
+    flex:none!important;height:auto!important;
+    min-height:calc(100% - 4px);overflow:visible!important;
+    padding:8px 14px 60px;gap:8px
+  }
+  .grid2,.grid3,.grid5,.states,.col,.card,.card-sm,pre{
+    flex:none!important;height:auto!important;min-height:0!important
+  }
+  .col{overflow:visible!important}
+  pre{font-size:.55rem;overflow-x:auto}
+  h2{font-size:.9rem}
+  .speaker-tag{display:none}
+  .gloss-strip{flex-direction:column}
+  .formula-row{font-size:.65rem}
+  table{font-size:.62rem}
+  th,td{padding:3px 5px}
+  .logo-box img{height:40px}
+  .logo-box{padding:5px 12px}
+}
+
 /* ── MOBILE RETRATO (≤480px) ── */
 @media(max-width:480px){
   /* QR oculto */
@@ -493,10 +517,6 @@ void ISR_T0(void) {
 }</pre>
       </div>
       <div class="col">
-        <div class="card" style="border-left:3px solid var(--w)">
-          <h3 style="color:var(--w)">ISR — o que é?</h3>
-          <p style="font-size:.82rem;line-height:1.5">Função executada automaticamente no estouro do Timer0. O loop principal <em>para</em>, a ISR roda (incrementa ms_tick) e o loop <em>volta</em> exatamente de onde parou. Dura microsegundos — transparente pro programa.</p>
-        </div>
         <div class="card" style="border-left:3px solid var(--w)">
           <h3 style="color:var(--w)">4 temporizações rodando ao mesmo tempo</h3>
           <table style="font-size:.78rem;margin-top:4px">
