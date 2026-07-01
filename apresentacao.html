@@ -375,17 +375,25 @@ void ISR_T0(void) {
       <div class="col">
         <div class="card" style="border-left:3px solid var(--w)">
           <h3 style="color:var(--w)">ISR — o que é?</h3>
-          <p style="font-size:.85rem;line-height:1.5">Função executada automaticamente quando o Timer0 estoura. O programa principal <em>para</em>, a ISR roda (incrementa ms_tick), e o programa <em>volta</em> exatamente de onde parou. Dura microsegundos.</p>
+          <p style="font-size:.82rem;line-height:1.5">Função executada automaticamente no estouro do Timer0. O loop principal <em>para</em>, a ISR roda (incrementa ms_tick) e o loop <em>volta</em> exatamente de onde parou. Dura microsegundos — transparente pro programa.</p>
         </div>
         <div class="card" style="border-left:3px solid var(--w)">
-          <h3 style="color:var(--w)">ms_tick na prática</h3>
-          <ul class="clean">
-            <li>Contador global incrementado pela ISR a cada 1 ms</li>
-            <li><code style="color:#3FB950">(ms_tick - t_inativo) >= 2300</code> = "passaram 2,3 s"</li>
-            <li><code style="color:#3FB950">(ms_tick - t_viagem) >= 3000</code> = "andou 1 andar"</li>
-            <li>Todas as contagens simultâneas — sem bloquear o loop</li>
-          </ul>
+          <h3 style="color:var(--w)">4 temporizações rodando ao mesmo tempo</h3>
+          <table style="font-size:.78rem;margin-top:4px">
+            <thead><tr><th>Variável</th><th>Condição</th><th>Uso</th></tr></thead>
+            <tbody>
+              <tr><td>t_inativo</td><td style="font-family:inherit;color:#3FB950">≥ 2300 ms</td><td style="font-family:inherit">Retorno ao 3º andar</td></tr>
+              <tr><td>t_viagem</td><td style="font-family:inherit;color:#3FB950">≥ 3000 ms</td><td style="font-family:inherit">Avança 1 andar</td></tr>
+              <tr><td>t_porta</td><td style="font-family:inherit;color:#3FB950">≥ 4000 ms</td><td style="font-family:inherit">Ciclo completo da porta</td></tr>
+              <tr><td>t_deb[i]</td><td style="font-family:inherit;color:#3FB950">≥ 20 ms</td><td style="font-family:inherit">Debounce de cada botão</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:.75rem;color:var(--gray);margin-top:6px">Todas calculadas com <code style="color:#3FB950">(ms_tick - t_X)</code> — sem delay, sem bloquear o loop.</p>
         </div>
+        <pre style="flex:none;font-size:.72rem">// Inicialização do Timer0
+T0CON = 0b10000010; // ON | 16-bit | clk interno | psc 1:8
+TMR0H = 0xFD; TMR0L = 0x8F; // preload 64.911
+INTCONbits.TMR0IE = 1; INTCONbits.GIE = 1;</pre>
       </div>
     </div>
   </div>
@@ -429,10 +437,23 @@ unsigned int ler_adc(void) {
           </ul>
         </div>
         <div class="card" style="border-left:3px solid var(--k)">
+          <h3 style="color:var(--k)">PIC18F4550 vs PIC18F452 (simulador)</h3>
+          <table style="font-size:.76rem;margin-top:4px">
+            <thead><tr><th>Detalhe</th><th style="color:var(--k)">PIC18F452 (sim.)</th><th style="color:#3FB950">PIC18F4550 (real)</th></tr></thead>
+            <tbody>
+              <tr><td>ADCON2</td><td style="font-family:inherit;color:var(--e)">Não existe</td><td style="font-family:inherit;color:#3FB950">Existe</td></tr>
+              <tr><td>ADFM (justify)</td><td style="font-family:inherit">ADCON1 bit 7</td><td style="font-family:inherit">ADCON2 bit 7</td></tr>
+              <tr><td>Bit GO</td><td style="font-family:inherit">ADCON0 bit 2</td><td style="font-family:inherit">ADCON0 bit 1</td></tr>
+              <tr><td>Aguardar conv.</td><td style="font-family:inherit">Delay10KTCYx(1)</td><td style="font-family:inherit">Espera ADIF</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:.75rem;color:var(--gray);margin-top:6px">⚠️ Código adaptado para o simulador — no hardware real alguns registradores mudam.</p>
+        </div>
+        <div class="card" style="border-left:3px solid var(--k)">
           <h3 style="color:var(--k)">Por que sem float?</h3>
           <ul class="clean">
-            <li>C18 LITE tem limitações com ponto flutuante</li>
-            <li>Usar <code style="color:#3FB950">unsigned long</code> evita overflow de 16 bits nas multiplicações</li>
+            <li>C18 LITE tem suporte limitado a ponto flutuante</li>
+            <li><code style="color:#3FB950">unsigned long</code> evita overflow: 1023 × 500 = 511.500 &gt; 65.535 (limite de 16 bits)</li>
             <li>temp_10 / 10 = parte inteira · temp_10 % 10 = decimal</li>
           </ul>
         </div>
@@ -588,31 +609,45 @@ void ler_botoes(void) {
       <span class="speaker-tag" style="color:var(--a)">Ana Caroline · Slide 12</span>
     </div>
     <div class="divider" style="background:var(--a)"></div>
-    <div class="states" style="flex:1;min-height:0">
+    <div class="states" style="flex:0 0 auto">
       <div class="state-box" style="border-top:3px solid var(--e)">
         <div class="sname" style="color:var(--e)">IDLE</div>
-        <p>Motor parado · aguarda botão ou timeout de 2,3 s · verifica temp</p>
+        <p>Motor parado · aguarda botão ou 2,3 s · verifica temp a cada iteração</p>
       </div>
       <div class="state-box" style="border-top:3px solid var(--w)">
         <div class="sname" style="color:var(--w)">MOVENDO</div>
-        <p>Motor ligado · avança 1 andar a cada 3 s via ms_tick · algoritmo SCAN</p>
+        <p>Motor ligado · avança 1 andar/3 s via ms_tick · algoritmo SCAN</p>
       </div>
       <div class="state-box" style="border-top:3px solid var(--k)">
         <div class="sname" style="color:var(--k)">RETORNANDO</div>
-        <p>Igual MOVENDO · destino fixo = 3º andar · disparado por inatividade</p>
+        <p>Igual MOVENDO · destino fixo = 3º andar · inatividade dispara</p>
       </div>
       <div class="state-box" style="border-top:3px solid var(--a)">
         <div class="sname" style="color:var(--a)">PORTA_ABERTA</div>
-        <p>Motor parado · 4 fases de 1 s · LED apaga aos 2 s (fechando)</p>
+        <p>Motor parado · 4 fases de 1 s · LED apaga aos 2 s</p>
       </div>
       <div class="state-box" style="border-top:3px solid var(--e)">
         <div class="sname" style="color:var(--e)">SUPERAQUECIDO</div>
-        <p>Motor para imediatamente · temp &gt; 31 °C · retoma viagem ao normalizar</p>
+        <p>Motor para · temp &gt; 31 °C · retoma viagem ao normalizar</p>
       </div>
     </div>
-    <div style="background:var(--card);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--gray);font-family:Consolas,monospace;text-align:center">
-      Loop principal: ler_adc() → ler_botoes() → maquina_estados() → atualizar_lcd()
-      <br>Qualquer estado de movimento: se temp &gt; 31 °C → SUPERAQUECIDO instantâneo
+    <!-- transições -->
+    <div style="flex:1;min-height:0;overflow:auto">
+      <table style="font-size:.78rem">
+        <thead><tr><th>De</th><th>Para</th><th>Condição</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--e)">IDLE</td><td style="color:var(--w);font-family:inherit">MOVENDO</td><td style="font-family:inherit">proximo_fila() retorna destino ≠ 0</td></tr>
+          <tr><td style="color:var(--e)">IDLE</td><td style="color:var(--k);font-family:inherit">RETORNANDO</td><td style="font-family:inherit">(ms_tick − t_inativo) ≥ 2300 ms <strong>e</strong> andar_atual ≠ 3</td></tr>
+          <tr><td style="color:var(--w)">MOVENDO</td><td style="color:var(--a);font-family:inherit">PORTA_ABERTA</td><td style="font-family:inherit">andar_atual == andar_destino</td></tr>
+          <tr><td style="color:var(--a)">PORTA_ABERTA</td><td style="color:var(--e);font-family:inherit">IDLE</td><td style="font-family:inherit">(ms_tick − t_porta) ≥ 4000 ms</td></tr>
+          <tr><td style="color:var(--e)">SUPERAQUECIDO</td><td style="color:var(--w);font-family:inherit">MOVENDO</td><td style="font-family:inherit">temp ≤ 31 °C <strong>e</strong> havia destino pendente</td></tr>
+          <tr><td style="color:var(--e)">SUPERAQUECIDO</td><td style="color:var(--e);font-family:inherit">IDLE</td><td style="font-family:inherit">temp ≤ 31 °C <strong>e</strong> sem destino pendente</td></tr>
+          <tr><td style="color:var(--gray)">Qualquer</td><td style="color:var(--e);font-family:inherit">SUPERAQUECIDO</td><td style="font-family:inherit;color:var(--e)">temp &gt; 31 °C (verificado em todo estado de movimento)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="background:var(--card);border-radius:8px;padding:8px 14px;font-size:.78rem;color:var(--gray);font-family:Consolas,monospace;text-align:center;flex-shrink:0">
+      Loop: ler_adc() → ler_botoes() → maquina_estados() → atualizar_lcd() &nbsp;·&nbsp; SUPERAQUECIDO é instantâneo em qualquer estado de movimento
     </div>
   </div>
 </div>
@@ -672,7 +707,28 @@ case RETORNANDO:
     }
     break;</pre>
     </div>
-    <div style="font-size:.78rem;color:var(--gray);background:var(--card);padding:8px 14px;border-radius:6px"><strong style="color:var(--e)">proximo_fila():</strong> algoritmo SCAN — procura próximo andar na direção atual; só inverte quando não há mais chamadas nessa direção</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0">
+      <div style="background:var(--card);border-radius:8px;padding:10px 14px;font-size:.78rem">
+        <strong style="color:var(--e)">Algoritmo SCAN — proximo_fila()</strong>
+        <ol style="margin-top:6px;padding-left:16px;display:flex;flex-direction:column;gap:4px;color:var(--gray)">
+          <li>Se subindo: procura o próximo andar <em>acima</em> do atual na fila</li>
+          <li>Se encontrou → vai para lá</li>
+          <li>Se não encontrou → inverte direção e procura <em>abaixo</em></li>
+          <li>Se descendo: mesma lógica invertida</li>
+          <li>Resultado: nunca sobe e desce sem critério — atende todos os andares em uma passagem</li>
+        </ol>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:10px 14px;font-size:.78rem">
+        <strong style="color:var(--e)">Fila de chamadas — array fila[7]</strong>
+        <ul style="margin-top:6px;list-style:none;display:flex;flex-direction:column;gap:4px;color:var(--gray)">
+          <li>→ <code style="color:#3FB950">fila[i] = 1</code> ao pressionar botão do andar i</li>
+          <li>→ <code style="color:#3FB950">fila[i] = 0</code> ao chegar no andar i</li>
+          <li>→ Vários andares podem estar na fila ao mesmo tempo</li>
+          <li>→ proximo_fila() escolhe o mais eficiente pelo SCAN</li>
+          <li>→ t_inativo resetado a cada novo botão pressionado</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -713,11 +769,21 @@ case SUPERAQUECIDO:
       <div class="col">
         <div class="card" style="border-left:3px solid var(--e)">
           <h3 style="color:var(--e)">Fases da porta (TEMPO_PORTA = 4 s)</h3>
-          <table style="font-size:.8rem">
-            <tr><td>0–1 s</td><td style="color:var(--white);font-family:inherit">Abrindo porta</td></tr>
-            <tr><td>1–2 s</td><td style="color:var(--white);font-family:inherit">Porta aberta!</td></tr>
-            <tr><td>2–3 s</td><td style="color:var(--white);font-family:inherit">Fechando porta <span style="color:var(--e)">(LED apaga)</span></td></tr>
-            <tr><td>3–4 s</td><td style="color:var(--white);font-family:inherit">Porta fechada</td></tr>
+          <!-- timeline visual -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin:8px 0">
+            <div style="background:#1a2a1a;border-radius:4px 0 0 4px;padding:5px 4px;text-align:center;font-size:.7rem;color:#3FB950;border-top:2px solid #3FB950">0–1 s<br><strong>Abrindo</strong></div>
+            <div style="background:#1a2a1a;padding:5px 4px;text-align:center;font-size:.7rem;color:#3FB950;border-top:2px solid #3FB950">1–2 s<br><strong>Aberta!</strong></div>
+            <div style="background:#2a1a1a;padding:5px 4px;text-align:center;font-size:.7rem;color:var(--e);border-top:2px solid var(--e)">2–3 s<br><strong>Fechando</strong><br><span style="font-size:.6rem">💡 LED off</span></div>
+            <div style="background:#2a1a1a;border-radius:0 4px 4px 0;padding:5px 4px;text-align:center;font-size:.7rem;color:var(--e);border-top:2px solid var(--e)">3–4 s<br><strong>Fechada</strong></div>
+          </div>
+          <table style="font-size:.76rem;margin-top:4px">
+            <thead><tr><th>Fase</th><th>LED (RD2)</th><th>LCD linha 2</th></tr></thead>
+            <tbody>
+              <tr><td>0–1 s</td><td style="font-family:inherit;color:#3FB950">1 (aceso)</td><td style="font-family:inherit">Abrindo porta</td></tr>
+              <tr><td>1–2 s</td><td style="font-family:inherit;color:#3FB950">1 (aceso)</td><td style="font-family:inherit">Porta aberta!</td></tr>
+              <tr><td>2–3 s</td><td style="font-family:inherit;color:var(--e)">0 (apagado)</td><td style="font-family:inherit">Fechando porta</td></tr>
+              <tr><td>3–4 s</td><td style="font-family:inherit;color:var(--e)">0 (apagado)</td><td style="font-family:inherit">Porta fechada</td></tr>
+            </tbody>
           </table>
         </div>
         <pre style="flex:none;font-size:.72rem">void motor_liga(void) {
@@ -776,8 +842,21 @@ void motor_desliga(void) {
 }</pre>
       <div class="col">
         <div class="card" style="border-left:3px solid var(--e)">
-          <h3 style="color:var(--e)">Por que 16 chars fixos?</h3>
-          <p style="font-size:.85rem;line-height:1.5">O LCD não apaga sozinho — espaços de preenchimento sobrescrevem caracteres anteriores. Sem isso, "STOP" deixaria restos de "↑" na tela.</p>
+          <h3 style="color:var(--e)">Estados do LCD — o que aparece</h3>
+          <table style="font-size:.72rem;margin-top:4px">
+            <thead><tr><th>Estado</th><th>Linha 1</th><th>Linha 2</th></tr></thead>
+            <tbody>
+              <tr><td style="color:var(--e)">IDLE</td><td style="font-family:Consolas,monospace;color:#3FB950">Andar: X      </td><td style="font-family:Consolas,monospace;color:#3FB950">Tmp: X.XC     </td></tr>
+              <tr><td style="color:var(--w)">MOVENDO ↑</td><td style="font-family:Consolas,monospace;color:#3FB950">Andar: X  ↑   </td><td style="font-family:Consolas,monospace;color:#3FB950">Tmp: X.XC     </td></tr>
+              <tr><td style="color:var(--w)">MOVENDO ↓</td><td style="font-family:Consolas,monospace;color:#3FB950">Andar: X  ↓   </td><td style="font-family:Consolas,monospace;color:#3FB950">Tmp: X.XC     </td></tr>
+              <tr><td style="color:var(--a)">PORTA 0–1s</td><td style="font-family:Consolas,monospace;color:#3FB950">Andar: X      </td><td style="font-family:Consolas,monospace;color:#3FB950">Abrindo porta </td></tr>
+              <tr><td style="color:var(--a)">PORTA 1–2s</td><td style="font-family:Consolas,monospace;color:#3FB950">Andar: X      </td><td style="font-family:Consolas,monospace;color:#3FB950">Porta aberta! </td></tr>
+              <tr><td style="color:var(--a)">PORTA 2–3s</td><td style="font-family:Consolas,monospace;color:#3FB950">Andar: X      </td><td style="font-family:Consolas,monospace;color:#3FB950">Fechando porta</td></tr>
+              <tr><td style="color:var(--a)">PORTA 3–4s</td><td style="font-family:Consolas,monospace;color:#3FB950">Andar: X      </td><td style="font-family:Consolas,monospace;color:#3FB950">Porta fechada </td></tr>
+              <tr><td style="color:var(--e)">SUPER</td><td style="font-family:Consolas,monospace;color:var(--e)">Andar: X STOP </td><td style="font-family:Consolas,monospace;color:#3FB950">Tmp: X.XC     </td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:.72rem;color:var(--gray);margin-top:5px">16 chars fixos em cada escrita — espaços apagam o que estava antes.</p>
         </div>
         <div>
           <div style="font-size:.75rem;color:var(--gray);margin-bottom:6px">Mock do LCD — situação normal</div>
