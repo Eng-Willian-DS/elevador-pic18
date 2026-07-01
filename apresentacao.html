@@ -193,11 +193,10 @@ tr:last-child td{border:none}
     min-height:calc(100% - 4px);overflow:visible!important;
     padding:8px 14px 60px;gap:8px
   }
-  .grid2,.grid3,.grid5,.states,.col,.card,.card-sm,pre{
-    flex:none!important;height:auto!important;min-height:0!important
+  .grid2,.grid3,.grid5,.states,.col,.card,.card-sm,pre,.state-box,.xpl-body{
+    flex:none!important;height:auto!important;min-height:0!important;overflow:visible!important
   }
-  .col{overflow:visible!important}
-  pre{font-size:.55rem;overflow-x:auto}
+  pre{font-size:.55rem;overflow-x:auto!important}
   h2{font-size:.9rem}
   .speaker-tag{display:none}
   .gloss-strip{flex-direction:column}
@@ -226,15 +225,16 @@ tr:last-child td{border:none}
     gap:10px
   }
 
-  /* Remove flex:1 height-filling de todos os filhos */
+  /* Remove flex:1 height-filling e overflow:hidden de todos os filhos */
   .grid2,.grid3,.grid5,.states,
-  .col,.card,.card-sm,pre{
+  .col,.card,.card-sm,pre,.state-box,.xpl,.xpl-body{
     flex:none!important;
     height:auto!important;
     min-height:0!important;
+    overflow:visible!important;
   }
-  .col{overflow:visible!important}
-  pre{overflow-x:auto;overflow-y:visible;max-height:none;font-size:.55rem}
+  pre{overflow-x:auto!important;font-size:.55rem}
+  .xpl{overflow:hidden!important} /* details precisa de hidden para animação de abertura */
 
   /* Logo */
   .logo-box img{height:42px}
