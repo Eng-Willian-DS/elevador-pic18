@@ -38,6 +38,7 @@ Toda a simulacao foi desenvolvida e validada no PICSimLab com MPLAB IDE v8.92 e 
 | Karoline Yang | 2578000 |
 | Ana Caroline Baptista | 2486024 |
 | Erick Villalva | 2301105 |
+| Juliano Barbosa Paixão | 2041952 |
 
 **AP2:** 01/07/2026 · **Apresentação:** 02/07/2026
 

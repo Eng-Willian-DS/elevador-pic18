@@ -6,7 +6,7 @@
 ## SLIDE 1 — CAPA
 **[WILLIAN abre a apresentação]**
 
-> "Bom dia, professor. Nosso grupo vai apresentar o trabalho de Central para Elevador com 6 andares usando o PIC18F4550. Sou o Willian, RA 1869027. Meus colegas são a Karoline, RA 2578000; a Ana Caroline, RA 2486024; e o Erick, RA 2301105. Vou começar apresentando a visão geral do projeto."
+> "Bom dia, professor. Nosso grupo vai apresentar o trabalho de Central para Elevador com 6 andares usando o PIC18F4550. Sou o Willian, RA 1869027. Meus colegas são o Juliano, RA 2041952; a Karoline, RA 2578000; a Ana Caroline, RA 2486024; e o Erick, RA 2301105. Vou começar apresentando a visão geral do projeto."
 
 ---
 
@@ -34,14 +34,16 @@
 ## SLIDE 3 — DIVISÃO DO TRABALHO
 **[WILLIAN]**
 
-> "O conteúdo foi dividido assim: eu apresento a parte de hardware, pinagem e PWM. A Karoline apresenta o Timer0 e o ADC. A Ana Caroline apresenta o LCD e os botões. E o Erick apresenta a máquina de estados e o display. Vamos começar."
+> "O conteúdo foi dividido em cinco partes. Eu apresento a visão geral, o Timer0 e a conclusão. O Juliano apresenta o hardware, a pinagem e o PWM. A Karoline apresenta o ADC e o LCD. A Ana Caroline apresenta a CGRAM, os botões e a visão geral da máquina de estados. E o Erick apresenta os detalhes dos estados e o display. Vamos começar."
 
 ---
 
 ## SLIDE 4 — HARDWARE: PINAGEM
-**[WILLIAN]**
+**[JULIANO]**
 
-> "Aqui está o mapeamento de todos os pinos utilizados.
+> "Obrigado, Willian. Eu sou o Juliano, RA 2041952, e vou apresentar o hardware do projeto.
+>
+> Aqui está o mapeamento de todos os pinos utilizados.
 >
 > O PORTB recebe os seis botões nos pinos RB0 a RB5. Usamos o pull-up interno do PIC, então cada botão é ativo em nível baixo — quando pressionado, o pino vai a zero.
 >
@@ -56,7 +58,7 @@
 ---
 
 ## SLIDE 5 — CONFIG BITS + INIT_HARDWARE
-**[WILLIAN]**
+**[JULIANO]**
 
 > "Para o oscillador, usamos FOSC igual a HS, que é o modo de cristal de alta velocidade, com um cristal externo de 20 MHz. O CPUDIV igual a OSC1_PLL2 garante que o PIC corra na frequência de Fosc sem acionar o PLL, que só seria necessário para USB. O watchdog está desabilitado para não reiniciar o PIC durante a simulação.
 >
@@ -69,7 +71,7 @@
 ---
 
 ## SLIDE 6 — PWM: CÁLCULO E CONFIGURAÇÃO
-**[WILLIAN]**
+**[JULIANO]**
 
 > "Agora o cálculo do PWM. O módulo CCP1 do PIC usa o Timer2 como base de tempo.
 >
@@ -86,11 +88,11 @@
 ---
 
 ## SLIDE 7 — TIMER0: BASE DE TEMPO DE 1 ms
-**[KAROLINE]**
+**[WILLIAN]**
 
-> "Boa tarde. Eu sou a Karoline, e vou apresentar o Timer0 e o ADC.
+> "Obrigado, Juliano. Vou apresentar agora o Timer0, que é o coração do sistema de temporização.
 >
-> O Timer0 é o coração do sistema de temporização do projeto. Precisamos medir 2.300 milissegundos de inatividade, 1.000 milissegundos de porta aberta, e 3.000 milissegundos de viagem entre andares — tudo ao mesmo tempo, sem bloquear o loop principal. Para isso, configuramos o Timer0 para gerar uma interrupção exatamente a cada 1 milissegundo.
+> Precisamos medir 2.300 milissegundos de inatividade, 1.000 milissegundos de porta aberta, e 3.000 milissegundos de viagem entre andares — tudo ao mesmo tempo, sem bloquear o loop principal. Para isso, configuramos o Timer0 para gerar uma interrupção exatamente a cada 1 milissegundo.
 >
 > O cálculo é o seguinte: com Fosc de 20 MHz, o ciclo de máquina é 4 dividido por 20 MHz = 200 nanossegundos. Com o prescaler em 1:8, cada incremento do Timer0 leva 1,6 microsegundos. Para completar 1 milissegundo, são necessários 625 incrementos.
 >
@@ -105,7 +107,9 @@
 ## SLIDE 8 — ADC: TEMPERATURA
 **[KAROLINE]**
 
-> "Agora o ADC. O potenciômetro conectado em RA0 simula a temperatura. O ADC do PIC tem resolução de 10 bits, então retorna valores de 0 a 1023 correspondentes a 0 a 5 volts.
+> "Obrigado, Willian. Eu sou a Karoline, RA 2578000, e vou apresentar o ADC e o LCD.
+>
+> O potenciômetro conectado em RA0 simula a temperatura. O ADC do PIC tem resolução de 10 bits, então retorna valores de 0 a 1023 correspondentes a 0 a 5 volts.
 >
 > Para configurar o ADC, primeiro definimos a tensão de referência como VDD e VSS — os bits VCFG em zero. Depois, em ADCON1, colocamos PCFG em 1110, que é o código para deixar apenas AN0 como analógico e todos os outros canais como digitais.
 >
@@ -118,24 +122,24 @@
 ---
 
 ## SLIDE 9 — LCD: BIBLIOTECA MIYADAIRA
-**[ANA CAROLINE]**
+**[KAROLINE]**
 
-> "Boa tarde. Eu sou a Ana Caroline, e vou apresentar o LCD e os botões.
->
-> O display LCD 2×16 é controlado pela biblioteca_lcd_2x16.h do professor Miyadaira, que usa 4 bits de dados nos pinos RD4 a RD7, e os sinais de controle RS, RW e Enable nos pinos RE2, RE0 e RE1 respectivamente.
+> "Agora o LCD. O display LCD 2×16 é controlado pela biblioteca_lcd_2x16.h do professor Miyadaira, que usa 4 bits de dados nos pinos RD4 a RD7, e os sinais de controle RS, RW e Enable nos pinos RE2, RE0 e RE1 respectivamente.
 >
 > As principais funções que usamos são: lcd_inicia, que inicializa o display; lcd_posicao, que move o cursor para uma linha e coluna específicas — numeradas a partir de 1; lcd_escreve_dado, que escreve um único byte no display; imprime_string_lcd, que envia uma string armazenada na memória de programa; e imprime_buffer_lcd, que envia um número específico de bytes de um buffer na RAM.
 >
 > Para inicializar, chamamos lcd_inicia com três parâmetros: 0x28, que configura modo de 4 bits, 2 linhas e matriz 8×5; 0x0F, que liga o display e ativa o cursor piscante; e 0x06, que faz o cursor se mover para a direita após cada caractere.
 >
-> Uma função que usamos muito é lcd_envia_controle, que envia comandos diretos para o controlador do display, incluindo comandos de escrita na memória CGRAM — que veremos no próximo slide."
+> Uma função que usamos muito é lcd_envia_controle, que envia comandos diretos para o controlador do display, incluindo comandos de escrita na memória CGRAM — que a Ana Caroline vai explicar no próximo slide."
 
 ---
 
 ## SLIDE 10 — CGRAM: CARACTERES ↑ E ↓
 **[ANA CAROLINE]**
 
-> "O controlador HD44780 do LCD tem uma memória especial chamada CGRAM, que permite criar até 8 caracteres personalizados de 5 por 8 pixels. Nós criamos dois: a seta para cima no slot 0 e a seta para baixo no slot 1.
+> "Obrigado, Karoline. Eu sou a Ana Caroline, RA 2486024, e vou apresentar a CGRAM, os botões e a visão geral da máquina de estados.
+>
+> O controlador HD44780 do LCD tem uma memória especial chamada CGRAM, que permite criar até 8 caracteres personalizados de 5 por 8 pixels. Nós criamos dois: a seta para cima no slot 0 e a seta para baixo no slot 1.
 >
 > Cada caractere é definido por 8 bytes, onde cada byte representa uma linha de pixels — os 5 bits menos significativos definem os pixels ativos. O bit mais significativo de cada byte corresponde à coluna da esquerda.
 >
@@ -163,11 +167,11 @@
 ---
 
 ## SLIDE 12 — MÁQUINA DE ESTADOS: VISÃO GERAL
-**[ERICK]**
+**[ANA CAROLINE]**
 
-> "Boa tarde. Eu sou o Erick, e vou apresentar a máquina de estados e o display.
+> "Agora a visão geral da máquina de estados que controla toda a lógica do elevador.
 >
-> Toda a lógica do elevador é controlada por uma máquina de estados com 5 estados. O loop principal executa quatro funções repetidamente: ler o ADC, ler os botões, executar o estado atual, e atualizar o LCD.
+> São 5 estados. O loop principal executa quatro funções repetidamente: ler o ADC, ler os botões, executar o estado atual, e atualizar o LCD.
 >
 > No estado IDLE, o motor está parado e o sistema aguarda uma chamada ou o timeout de 2,3 segundos. No estado MOVENDO, o motor está ativo e o elevador avança um andar a cada 3 segundos simulados — isso é controlado pelo ms_tick. O estado RETORNANDO funciona exatamente igual ao MOVENDO, mas o destino é sempre o terceiro andar.
 >
@@ -180,7 +184,9 @@
 ## SLIDE 13 — ESTADOS IDLE E MOVENDO
 **[ERICK]**
 
-> "Vamos ver o código dos estados IDLE e MOVENDO em detalhe.
+> "Obrigado, Ana Caroline. Eu sou o Erick, RA 2301105, e vou apresentar os detalhes dos estados e o display.
+>
+> Vamos ver o código dos estados IDLE e MOVENDO em detalhe.
 >
 > No IDLE: primeiro desligamos o motor para garantir que está parado. Depois verificamos a temperatura — se ultrapassou 31 graus, vai direto para SUPERAQUECIDO.
 >
@@ -250,11 +256,12 @@
 **Tempo estimado por parte:**
 | Integrante | Slides | Tempo estimado |
 |---|---|---|
-| Willian | 1, 2, 3, 4, 5, 6 | ~8 minutos |
-| Karoline | 7, 8 | ~6 minutos |
-| Ana Caroline | 9, 10, 11 | ~6 minutos |
-| Erick | 12, 13, 14, 15, 16 | ~7 minutos |
-| **Total** | **16 slides** | **~27 minutos** |
+| Willian | 1, 2, 3, 7, 16 | ~6 minutos |
+| Juliano | 4, 5, 6 | ~5 minutos |
+| Karoline | 8, 9 | ~4 minutos |
+| Ana Caroline | 10, 11, 12 | ~5 minutos |
+| Erick | 13, 14, 15 | ~5 minutos |
+| **Total** | **16 slides** | **~25 minutos** |
 
 **Frases-chave para saber de cor:**
 - "ms_tick incrementa a cada 1 ms na ISR do Timer0, sem bloquear o loop"
